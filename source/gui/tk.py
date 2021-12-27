@@ -1,0 +1,352 @@
+import os
+from posixpath import join
+import shutil
+import logging
+
+from tkinter import Tk, messagebox, filedialog, Label, Button, simpledialog
+from util.structure.transportation import Transportation
+
+from building import Building
+from gui.stage_two import get_prevent_zone_id
+
+
+class TkApp:
+
+    def __init__(self, base_path, log_dir, cache_dir) -> None:
+
+        self.base_path = base_path  # repo/app path
+        self.log_dir = log_dir  # ~/.sinopath/.log
+        # cache_dir  # ~/.sinopath/.cache
+
+        # if os.path.exists(os.path.join(self.base_path, ".cache")) and \
+        #         not len([f for f in os.listdir(self.cache_dir) if ".pickle" in f]):
+        #     # 如果 APP 有 cache 而系統沒有，就 copy 過去系統
+        #     self.__reset_cache()
+
+        # if messagebox.askquestion("確認", "是否強制重置快取？") == "yes":
+        #     self.__reset_cache()
+
+        self.meta_file_path = None
+        self.xml_path = None
+        self.output_dir = None
+        self.input_cache_dir = None
+        self.output_cache_dir = None
+
+        self.root = Tk()
+        self.root.title("SinoPath Beta")
+        self.root.geometry("720x480")
+
+        self.xml_label = Label(self.root, text=self.xml_path)
+        self.xml_label.config(font=("Courier", 8))
+        self.xml_label.pack()
+
+        buttonCommit1 = Button(
+            self.root,
+            height=1,
+            width=20,
+            text="Select gbxml File",
+            command=lambda: self.__handleChangeFile(
+                self.xml_label,
+                "Please select a extended gbXML file",
+                "xml",
+                "LG10_Extended_gbXML_20210913.xml"
+            )
+        )
+        buttonCommit1.pack()
+
+        input_cache_label = Label(self.root, text=self.input_cache_dir)
+        input_cache_label.config(font=("Courier", 8))
+        input_cache_label.pack()
+
+        buttonCommit2 = Button(
+            self.root,
+            height=1,
+            width=20,
+            text="Input cache directory",
+            command=lambda: self.__handleChangeDir(
+                input_cache_label,
+                "Select a input cache directory",
+                1
+            )
+        )
+        buttonCommit2.pack()
+
+        output_cache_label = Label(self.root, text=self.input_cache_dir)
+        output_cache_label.config(font=("Courier", 8))
+        output_cache_label.pack()
+
+        buttonCommit2 = Button(
+            self.root,
+            height=1,
+            width=20,
+            text="Output cache directory",
+            command=lambda: self.__handleChangeDir(
+                output_cache_label,
+                "Select a Output cache directory",
+                2
+            )
+        )
+        buttonCommit2.pack()
+
+        output_label = Label(self.root, text=self.output_dir)
+        output_label.config(font=("Courier", 8))
+        output_label.pack()
+
+        buttonCommit2 = Button(
+            self.root,
+            height=1,
+            width=20,
+            text="Output directory",
+            command=lambda: self.__handleChangeDir(
+                output_label,
+                "Please select a output directory",
+                0
+            )
+        )
+        buttonCommit2.pack()
+
+        _ = Label(self.root, text="")
+        _.config(font=("Courier", 12))
+        _.pack()
+
+        buttonCommit2 = Button(
+            self.root,
+            height=1,
+            width=20,
+            text="Run Analysis",
+            command=lambda: self.__handleRun()
+        )
+        buttonCommit2.pack()
+
+        self.plotBtn = None
+
+        self.root.mainloop()
+
+    def __reset_cache(self, input_dir: str, output_dir: str, suffix: str = ".pickle") -> None:
+        if input_dir == output_dir:
+            return
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir, exist_ok=True)
+        for path in os.listdir(input_dir):
+            if suffix in path:
+                shutil.copy(
+                    os.path.join(input_dir, path),
+                    os.path.join(output_dir, path)
+                )
+
+    def __handleChangeFile(self, target_label: Label, title_: str, type: str, default_path: str) -> None:
+        target_label["text"] = os.path.join(
+            type,
+            filedialog.askopenfilename(
+                title=title_,
+                initialdir=os.path.join(self.base_path, type),
+                initialfile=os.path.join(self.base_path, type, default_path),
+                filetypes=[(type.upper(), "*.{}".format(type),)]
+            )
+        )
+        if type == "json":
+            self.meta_file_path = target_label["text"]
+        elif type == "xml":
+            self.xml_path = target_label["text"]
+
+    def __handleChangeDir(self, target_label: Label, title_: str, type: int) -> None:
+        """
+        type: 0 -> output_dir, 1 -> input_cache_dir, 2 -> output_cache_dir
+        """
+        target_label["text"] = filedialog.askdirectory(title=title_)
+        if type == 0:
+            self.output_dir = target_label["text"]
+        elif type == 1:
+            self.input_cache_dir = target_label["text"]
+        elif type == 2:
+            self.output_cache_dir = target_label["text"]
+
+    def __handleRun(self):
+
+        if (not self.xml_path or ".xml" not in self.xml_path) \
+                or not self.output_dir:
+            messagebox.showwarning("Warning", "Please choose some files.")
+            return
+
+        self.__reset_cache(self.input_cache_dir, self.output_cache_dir)
+
+        self.building = Building(
+            density=(0.2 ** 0.5),
+            use_cache=True,
+            cache_dir=self.output_cache_dir,
+            output_dir=self.output_dir
+        )
+        self.building.load_infos(
+            contours_path=self.xml_path
+        )
+
+        self.building.to_grid_graph()
+        while messagebox.askquestion("SinoPath", "Open Editor?") == "yes":
+            self.root.update()
+            self.building.edit_graph_gui()
+        self.building.connect_floors()
+        self.building.instances_analysis()
+        self.building.calculate_reverse_table()
+
+        while not self.__check_output_dir_existence_and_premission(self.output_dir):
+            self.output_dir = filedialog.askdirectory(
+                title="輸出資料夾不存在或權限錯誤，請重新選擇"
+            )
+            self.building.update_output_dir(self.output_dir)
+
+        self.building.dump_sol_table()
+
+        messagebox.showinfo("完成", "成功分析逃生路徑")
+
+        if not self.plotBtn:
+            _ = Label(self.root, text="")
+            _.config(font=("Courier", 12))
+            _.pack()
+            _ = Label(self.root, text="第一階段")
+            _.config(font=("Courier", 12))
+            _.pack()
+            self.plotBtn = Button(
+                self.root,
+                height=1,
+                width=14,
+                text="運行第一階段",
+                command=lambda: self.__handlePlot(0)
+            )
+            self.plotBtn.pack()
+            _ = Label(self.root, text="第二階段")
+            _.config(font=("Courier", 12))
+            _.pack()
+            stageTwoBtn = Button(
+                self.root,
+                height=1,
+                width=14,
+                text="運行第二階段",
+                command=lambda: self.__handleStageTwo()
+            )
+            stageTwoBtn.pack()
+
+    def __check_output_dir_existence_and_premission(self, output_dir: str) -> bool:
+        if not os.path.exists(output_dir):
+            logging.info("Not exists: {}".format(
+                output_dir
+            ))
+            return False
+        try:
+            open(os.path.join(output_dir, ".sinopath_test_write_permission"), "w")
+            os.remove(os.path.join(
+                output_dir,
+                ".sinopath_test_write_permission"
+            ))
+            logging.info("Exists: {}".format(
+                output_dir
+            ))
+            return True
+        except Exception as e:
+            logging.info("{} encounters {}, did not pass checking".format(
+                output_dir, repr(e)
+            ))
+            return False
+
+    def __handlePlot(self, type: int):
+        while not self.__check_output_dir_existence_and_premission(self.output_dir):
+            self.output_dir = filedialog.askdirectory(
+                title="輸出資料夾不存在或權限錯誤，請重新選擇"
+            )
+            self.building.update_output_dir(self.output_dir)
+        if type == 0:
+            # # key: preventzone name, value: preventzone id
+            # prevent_zone_dict = {self.building.get_preventzone_name_by_id(
+            #     id_): id_ for id_ in self.building.get_all_preventzone_ids()}
+            # # key: transportation name, value: transportation id
+            # transportation_dict = {self.building.get_transportation_name_by_id(
+            #     id_.split("_")[0]): id_ for id_ in self.building.get_all_may_fail_transportation_ids()}
+
+            # prevent_zone_ids = list(prevent_zone_dict.keys())
+            # transportation_ids = list(transportation_dict.keys())
+
+            # seletect_prevent_zone = prevent_zone_dict[get_prevent_zone_id(
+            #     "Select prevent zone", prevent_zone_ids)]
+            # seletect_transportation = transportation_dict[get_prevent_zone_id(
+            #     "Select transportation", transportation_ids)]
+            # print(seletect_prevent_zone, seletect_transportation)
+            # instance_str = "{}_{}".format(
+            #     seletect_prevent_zone, seletect_transportation)
+
+            # floor_idx_dict = dict({
+            #     floor.get_name(): i
+            #     for i, floor in enumerate(self.building.get_floors())
+            # })
+            # selected_floor_idx = floor_idx_dict[
+            #     get_prevent_zone_id(
+            #         "選擇起始點會在哪一層",
+            #         list(floor_idx_dict.keys())
+            #     )
+            # ]
+
+            # start_point = self.building.get_floor_with_idx(
+            #     selected_floor_idx
+            # ).select_point()
+            # self.root.update()
+
+            # if self.building.which_preventzone(start_point) == seletect_prevent_zone:
+            #     instance_str = "in" + instance_str
+
+            instance_str = simpledialog.askstring(
+                title="",
+                prompt="Input instance_str:"
+            )
+            start_point = simpledialog.askstring(
+                title="",
+                prompt="Input start point:"
+            )
+
+            failed_endpoints = self.building.plot_sol(
+                "2",
+                start_point,
+                instance_str
+            )
+            if len(failed_endpoints):
+                messagebox.showwarning(
+                    "計算錯誤", "不存在到終點{}的路徑".format(failed_endpoints)
+                )
+                self.root.update()
+
+    def __handleStageTwo(self):
+        prevent_zone_dict = {
+            self.building.get_preventzone_name_by_id(id_): id_
+            for id_ in self.building.get_all_preventzone_ids()
+        }
+        prevent_zone_ids = list(prevent_zone_dict.keys())
+        prevent_zone_id = prevent_zone_dict[
+            get_prevent_zone_id(
+                "Select prevent zone",
+                prevent_zone_ids
+            )
+        ]
+        logging.info("Selected prevent zone: {}".format(prevent_zone_id))
+
+        floor_idx_dict = dict({
+            floor.get_name(): i
+            for i, floor in enumerate(self.building.get_floors())
+        })
+        selected_floor_idx = floor_idx_dict[
+            get_prevent_zone_id(
+                "選擇起始點在哪一層",
+                list(floor_idx_dict.keys())
+            )
+        ]
+        start_point_id = self.building.get_floors()[
+            selected_floor_idx
+        ].select_point()
+        logging.debug("Selected: {}".format(start_point_id))
+
+        while not self.__check_output_dir_existence_and_premission(self.output_dir):
+            self.output_dir = filedialog.askdirectory(
+                title="輸出資料夾不存在或權限錯誤，請重新選擇"
+            )
+            self.building.update_output_dir(self.output_dir)
+
+        self.building.real_time_escape(
+            prevent_zone_id,
+            start_point_id
+        )

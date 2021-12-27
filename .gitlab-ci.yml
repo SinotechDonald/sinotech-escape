@@ -1,0 +1,38 @@
+image: "python:3.8"
+
+before_script:
+  - python3 --version
+  - cd source/
+  - python3 -m venv .env
+  - source .env/bin/activate
+  - python3 -m pip install --default-timeout=100 -r requirements.txt
+  - python3 -m pip install pytest
+
+stages:
+  - build
+  - test
+  - telegram
+
+test-alive:
+  stage: build
+  script:
+    - echo "ok"
+
+build-python:
+  stage: build
+  script:
+    - echo "Check the python version, then build some Python project files:"
+    - python3 --version
+    - python3 main.py -h
+
+unit-test:
+  stage: test
+  script:
+    - cd tests/
+    - python3 -m pytest
+
+send-report:
+  stage: telegram
+  script:
+    - curl -X POST -d "mes=($CI_PROJECT_NAME) Failed on $CI_JOB_STAGE from $GITLAB_USER_LOGIN" "http://localhost:34567/send"
+  when: on_failure
