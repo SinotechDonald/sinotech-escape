@@ -148,8 +148,9 @@ class Floor:
         #     font = FontProperties(fname=os.path.join(
         #         sys._MEIPASS, "ttc", "DFLiHei-Bd.ttc"), size=1)
         else:
-            font = FontProperties(fname=r"D:/Prj/Python/sinotech-escape/tools/DFLiHei-Bd.ttc",size=1)
+            font = FontProperties(fname=r"C:/Prj/Python/sinotech-escape/tools/DFLiHei-Bd.ttc",size=1)
 
+        length = 0
         if self.__contour != None:
             logging.debug("plot contour")
             for line in self.__contour.get_lines():
@@ -265,6 +266,7 @@ class Floor:
 
                 ax.scatter(start_x, start_y, c="green", s=0.2)
                 ax.scatter(end_x, end_y, c="green", s=0.2)
+        ax.set_xlabel("Donald")
 
         logging.debug("making vstack")
         xx = np.vstack([xs[0::2], xs[1::2]])

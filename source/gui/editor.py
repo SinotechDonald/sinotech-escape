@@ -35,7 +35,7 @@ class Editor:
             #     self.__font = FontProperties(fname=os.path.join(
             #         sys._MEIPASS, "ttc", "DFLiHei-Bd.ttc"), size=1)
             else:
-                self.__font = FontProperties(fname=r"D:/Prj/Python/sinotech-escape/tools/DFLiHei-Bd.ttc",size=1)
+                self.__font = FontProperties(fname=r"C:/Prj/Python/sinotech-escape/tools/DFLiHei-Bd.ttc",size=1)
         else:
             self.__font = FontProperties(fname=ttc_path)
         self.__press_time = None

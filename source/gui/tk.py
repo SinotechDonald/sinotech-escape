@@ -4,6 +4,7 @@ import shutil
 import logging
 
 from tkinter import Tk, messagebox, filedialog, Label, Button, simpledialog
+from tkinter.constants import NONE
 from util.structure.transportation import Transportation
 
 from building import Building
@@ -34,10 +35,23 @@ class TkApp:
 
         self.root = Tk()
         self.root.title("SinoPath Beta")
-        self.root.geometry("720x480")
+        # self.root.geometry("720x480")
+
+        # 置中
+        # Gets the requested values of the height and widht. 720x480
+        windowWidth = 720
+        windowHeight = 480        
+        # Gets both half the screen width/height and window width/height
+        positionRight = int(self.root.winfo_screenwidth()/2 - windowWidth/2)
+        positionDown = int(self.root.winfo_screenheight()/3 - windowHeight/2)        
+        # Positions the window in the center of the page.
+        size = '720x480+%s+%s' % (positionRight, positionDown)
+        self.root.geometry(size)
 
         self.xml_label = Label(self.root, text=self.xml_path)
         self.xml_label.config(font=("Courier", 8))
+        self.xml_label['text'] = "D:/逃生路徑/gbXML/LG10_Extended_gbXML_20211104.xml"
+        self.xml_path = "D:/逃生路徑/gbXML/LG10_Extended_gbXML_20211104.xml"
         self.xml_label.pack()
 
         buttonCommit1 = Button(
@@ -49,13 +63,15 @@ class TkApp:
                 self.xml_label,
                 "Please select a extended gbXML file",
                 "xml",
-                "LG10_Extended_gbXML_20210913.xml"
+                "LG10_Extended_gbXML_20211104.xml"
             )
         )
         buttonCommit1.pack()
 
         input_cache_label = Label(self.root, text=self.input_cache_dir)
         input_cache_label.config(font=("Courier", 8))
+        input_cache_label['text'] = "D:/逃生路徑/Input cache"
+        self.input_cache_dir = "D:/逃生路徑/Input cache"
         input_cache_label.pack()
 
         buttonCommit2 = Button(
@@ -73,6 +89,8 @@ class TkApp:
 
         output_cache_label = Label(self.root, text=self.input_cache_dir)
         output_cache_label.config(font=("Courier", 8))
+        output_cache_label['text'] = "D:/逃生路徑/Output cache"
+        self.output_cache_dir = "D:/逃生路徑/Output cache"
         output_cache_label.pack()
 
         buttonCommit2 = Button(
@@ -90,6 +108,8 @@ class TkApp:
 
         output_label = Label(self.root, text=self.output_dir)
         output_label.config(font=("Courier", 8))
+        output_label['text'] = "D:/逃生路徑/Output directory"
+        self.output_dir = "D:/逃生路徑/Output directory"
         output_label.pack()
 
         buttonCommit2 = Button(

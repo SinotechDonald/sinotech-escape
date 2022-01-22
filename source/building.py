@@ -156,6 +156,8 @@ class Building:
                     for cache_path in floor_cache_paths:
                         with open(os.path.join(self.__cache_dir, cache_path), "rb") as f:
                             self.__floors.append(pickle.load(f))
+                    # 依高程排序
+                    self.__floors = sorted(self.__floors, key= lambda s: s.get_elevation())
                     return
 
         threads = list()
@@ -689,6 +691,15 @@ class Building:
             logging.error("建物抽象圖編輯錯誤！")
             messagebox.showerror("", "建物抽象圖編輯錯誤，請檢查是否合法有逃生路徑失效。")
 
+        # 找到self.floors的最小值當起點
+        min_elev = self.__floors[0].get_elevation()
+        for f in self.__floors:
+            if f.get_elevation() < min_elev:
+                min_elev = f.get_elevation()
+        
+        lowest_floor = min(self.__floors, key=lambda x: x.get_elevation())
+        min_elev = lowest_floor.get_elevation()
+        
         # initialization and start point not in failed prevent zone cases
         for instance_str in self.solutions:
             if "in" in instance_str or instance_str == "none":
@@ -704,7 +715,7 @@ class Building:
 
             # init.
             for start_point_id in all_vertex_ids:
-                if '99.45' in start_point_id:
+                if str(min_elev) in start_point_id:
                     if start_point_id == failed_transportation_id:
                         continue
                     self.sol_table_dict[(
@@ -930,7 +941,7 @@ class Building:
                     instance_str, end_point_id, f))
             logging.debug("完成樓層：{}".format(f))
         logging.info("成功繪製各樓層圖檔！")
-
+        
     def __shorten_path(
         self,
         distance: dict,
