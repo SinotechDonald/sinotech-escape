@@ -507,7 +507,6 @@ class Building:
                 logging.debug("Done reading cache")
 
         else:
-
             all_vertex_ids = list()
             for vertex_id in self.__total_graph.get_vertex_ids():
                 all_vertex_ids.append(vertex_id)

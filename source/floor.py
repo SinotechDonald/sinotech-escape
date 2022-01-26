@@ -15,6 +15,7 @@ from util.structure.graph import Graph
 from util.raycasting import isPointinPolygon
 from gui.editor import Editor
 from gui.stage_two import Selector
+from util.dijkstra import Dijkstra
 
 
 class Floor:
@@ -149,8 +150,7 @@ class Floor:
         #         sys._MEIPASS, "ttc", "DFLiHei-Bd.ttc"), size=1)
         else:
             font = FontProperties(fname=r"C:/Prj/Python/sinotech-escape/tools/DFLiHei-Bd.ttc",size=1)
-
-        length = 0
+        
         if self.__contour != None:
             logging.debug("plot contour")
             for line in self.__contour.get_lines():
@@ -266,7 +266,11 @@ class Floor:
 
                 ax.scatter(start_x, start_y, c="green", s=0.2)
                 ax.scatter(end_x, end_y, c="green", s=0.2)
-        ax.set_xlabel("Donald")
+        #顯示路徑長度：步行點數 * 0.2開根號
+        path_points = len(self.path_tmp)
+        path_length = (path_points - 1) * 0.2 ** 0.5
+        s = 'Points: {points}, Distance: {length}'.format(points=path_points, length=path_length)
+        ax.set_xlabel(s, family='serif', color='r', size=12)
 
         logging.debug("making vstack")
         xx = np.vstack([xs[0::2], xs[1::2]])
