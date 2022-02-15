@@ -268,8 +268,10 @@ class Floor:
                 ax.scatter(end_x, end_y, c="green", s=0.2)
         #顯示路徑長度：步行點數 * 0.2開根號
         path_points = len(self.path_tmp)
-        path_length = (path_points - 1) * 0.2 ** 0.5
-        s = 'Points: {points}, Distance: {length}'.format(points=path_points, length=path_length)
+        path_length = round((path_points - 1) * 0.2 ** 0.5, 4)
+        lengthFormat = "%.4f"%path_length
+        # s = 'Points: {points}, Distance: {length}'.format(points=path_points, length=test)
+        s = "Points: %.0f"%path_points + ", Distance: %.4f"%path_length
         ax.set_xlabel(s, family='serif', color='r', size=12)
 
         logging.debug("making vstack")
