@@ -145,11 +145,11 @@ class Floor:
         if os.path.exists(os.path.join("util", "DFLiHei-Bd.ttc")):
             font = FontProperties(fname=os.path.join(
                 "util", "DFLiHei-Bd.ttc"), size=1)
-        # else:
-        #     font = FontProperties(fname=os.path.join(
-        #         sys._MEIPASS, "ttc", "DFLiHei-Bd.ttc"), size=1)
         else:
-            font = FontProperties(fname=r"C:/Prj/Python/sinotech-escape/tools/DFLiHei-Bd.ttc",size=1)
+            font = FontProperties(fname=os.path.join(
+                sys._MEIPASS, "ttc", "DFLiHei-Bd.ttc"), size=1)
+        # else:
+        #     font = FontProperties(fname=r"C:/Prj/Python/sinotech-escape/tools/DFLiHei-Bd.ttc",size=1)
         
         if self.__contour != None:
             logging.debug("plot contour")
@@ -269,7 +269,6 @@ class Floor:
         #顯示路徑長度：步行點數 * 0.2開根號
         path_points = len(self.path_tmp)
         path_length = round((path_points - 1) * 0.2 ** 0.5, 4)
-        lengthFormat = "%.4f"%path_length
         # s = 'Points: {points}, Distance: {length}'.format(points=path_points, length=test)
         s = "Points: %.0f"%path_points + ", Distance: %.4f"%path_length
         ax.set_xlabel(s, family='serif', color='r', size=12)
