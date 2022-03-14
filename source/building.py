@@ -402,7 +402,7 @@ class Building:
                         logging.debug("連接傳送點 {}".format(vertex_id))
                         elevation_gap = abs(floor.get_elevation(
                         ) - transportation_dict[vertex_id][1])  # 新減舊
-                        vertical_moving_speed = 1
+                        vertical_moving_speed = 1 # 修改垂直距離佈點
                         parallel_moving_speed = 1
                         append_num = np.ceil(elevation_gap / self.__density / (
                             vertical_moving_speed / parallel_moving_speed)).astype(int)  # ceiling
