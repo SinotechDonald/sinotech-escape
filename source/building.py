@@ -406,6 +406,7 @@ class Building:
                         parallel_moving_speed = 1
                         append_num = np.ceil(elevation_gap / self.__density / (
                             vertical_moving_speed / parallel_moving_speed)).astype(int)  # ceiling
+                        append_num = 2 # 連結佈點只留起終點, 盡量減低垂直距離計算
                         for cnt in range(append_num):
                             if cnt == 0:  # 頭
                                 self.__total_graph.add_vertex(Vertex(vertex_obj.get_coordinate()[0], vertex_obj.get_coordinate()[1], floor.get_elevation(
@@ -785,58 +786,61 @@ class Building:
                 else:  # dead point
                     dead_point_ids.append(current_start_id)
                 untraversed_start_point_ids.remove(current_start_id)
-            most_dangerous_start_point_id = max(
-                start_to_end_point, key=lambda start_point: start_to_end_point[start_point][1])
-            new_row["最險峻路徑長度"] = start_to_end_point[most_dangerous_start_point_id][1] * self.__density
-            new_row["起點"] = most_dangerous_start_point_id
-            new_row["無法逃生座標點列表"] = dead_point_ids
+            try:
+                most_dangerous_start_point_id = max(
+                    start_to_end_point, key=lambda start_point: start_to_end_point[start_point][1])
+                new_row["最險峻路徑長度"] = start_to_end_point[most_dangerous_start_point_id][1] * self.__density
+                new_row["起點"] = most_dangerous_start_point_id
+                new_row["無法逃生座標點列表"] = dead_point_ids
 
-            # 起點位於防煙區劃
-            new_row["起點位於防煙區劃"] = self.get_preventzone_name_by_id(self.which_preventzone(
-                most_dangerous_start_point_id))
+                # 起點位於防煙區劃
+                new_row["起點位於防煙區劃"] = self.get_preventzone_name_by_id(self.which_preventzone(
+                    most_dangerous_start_point_id))
 
-            # 終點
-            most_dangerous_end_point_id = start_to_end_point[most_dangerous_start_point_id][0]
-            new_row["終點"] = self.get_transportation_name_by_id(
-                most_dangerous_end_point_id.split("_")[0])
+                # 終點
+                most_dangerous_end_point_id = start_to_end_point[most_dangerous_start_point_id][0]
+                new_row["終點"] = self.get_transportation_name_by_id(
+                    most_dangerous_end_point_id.split("_")[0])
 
-            # 終點編號
-            new_row["終點編號"] = most_dangerous_end_point_id
+                # 終點編號
+                new_row["終點編號"] = most_dangerous_end_point_id
 
-            # 路徑經過防煙區劃 and instance_str
-            if preventzone_id == 'none' and transportation_id == 'none':
-                instance_str = "none"
-            # read instance_str with "in"
-            elif self.which_preventzone(most_dangerous_start_point_id) == preventzone_id:
-                instance_str = "in{}".format(
-                    self.__id_join(preventzone_id, transportation_id))
-            else:  # read instance_str without "in"
-                instance_str = self.__id_join(
-                    preventzone_id, transportation_id)
-            # print(instance_str, most_dangerous_end_point_id)
-            dijk_parent_dict = self.solutions[instance_str].shortest_paths[
-                most_dangerous_end_point_id][0]
-            new_row["instance_str"] = instance_str
+                # 路徑經過防煙區劃 and instance_str
+                if preventzone_id == 'none' and transportation_id == 'none':
+                    instance_str = "none"
+                # read instance_str with "in"
+                elif self.which_preventzone(most_dangerous_start_point_id) == preventzone_id:
+                    instance_str = "in{}".format(
+                        self.__id_join(preventzone_id, transportation_id))
+                else:  # read instance_str without "in"
+                    instance_str = self.__id_join(
+                        preventzone_id, transportation_id)
+                # print(instance_str, most_dangerous_end_point_id)
+                dijk_parent_dict = self.solutions[instance_str].shortest_paths[
+                    most_dangerous_end_point_id][0]
+                new_row["instance_str"] = instance_str
 
-            # if new_row["最險峻路徑長度"] != np.inf:
-            path_ = [most_dangerous_start_point_id]
-            # print(most_dangerous_start_point_id)
-            while path_[-1] != most_dangerous_end_point_id:
-                path_.append(dijk_parent_dict[path_[-1]])
+                # if new_row["最險峻路徑長度"] != np.inf:
+                path_ = [most_dangerous_start_point_id]
+                # print(most_dangerous_start_point_id)
+                while path_[-1] != most_dangerous_end_point_id:
+                    path_.append(dijk_parent_dict[path_[-1]])
 
-            path_preventzone_list = [self.which_preventzone(path_[0])]
-            for point in path_:
-                point_lies_in = self.which_preventzone(point)
-                if path_preventzone_list[-1] != point_lies_in:
-                    path_preventzone_list.append(point_lies_in)
+                path_preventzone_list = [self.which_preventzone(path_[0])]
+                for point in path_:
+                    point_lies_in = self.which_preventzone(point)
+                    if path_preventzone_list[-1] != point_lies_in:
+                        path_preventzone_list.append(point_lies_in)
 
-            path_preventzone_name_list = [self.get_preventzone_name_by_id(
-                p_id) for p_id in path_preventzone_list]
+                path_preventzone_name_list = [self.get_preventzone_name_by_id(
+                    p_id) for p_id in path_preventzone_list]
 
-            new_row["路徑經過防煙區劃"] = path_preventzone_name_list
+                new_row["路徑經過防煙區劃"] = path_preventzone_name_list
 
-            sol_table = sol_table.append(
-                new_row, ignore_index=True)
+                sol_table = sol_table.append(
+                    new_row, ignore_index=True)
+            except:
+                error = 'error'
 
         # dump sol table to file
         sol_table.to_csv(os.path.join(self.__output_dir,
