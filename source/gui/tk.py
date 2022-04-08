@@ -315,14 +315,15 @@ class TkApp:
                 title="",
                 prompt="Input instance_str:"
             )
-            start_point = simpledialog.askstring(
-                title="",
-                prompt="Input start point:"
-            )
+            # start_point = simpledialog.askstring(
+            #     title="",
+            #     prompt="Input start point:"
+            # )
 
             failed_endpoints = self.building.plot_sol(
                 "2",
-                start_point,
+                # start_point,
+                "",
                 instance_str
             )
             if len(failed_endpoints):

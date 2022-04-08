@@ -404,8 +404,9 @@ class Building:
                         ) - transportation_dict[vertex_id][1])  # 新減舊
                         vertical_moving_speed = 1 # 修改垂直距離佈點
                         parallel_moving_speed = 1
-                        append_num = np.ceil(elevation_gap / self.__density / (
-                            vertical_moving_speed / parallel_moving_speed)).astype(int)  # ceiling
+                        # # 模擬垂直距離佈點數
+                        # append_num = np.ceil(elevation_gap / self.__density / (
+                        #     vertical_moving_speed / parallel_moving_speed)).astype(int)  # ceiling
                         append_num = 2 # 連結佈點只留起終點, 盡量減低垂直距離計算
                         for cnt in range(append_num):
                             if cnt == 0:  # 頭
@@ -632,6 +633,8 @@ class Building:
         failed_endpoint_ids = list()
         if not instance_str in self.solutions:
             raise ValueError("invalid instance string!")
+        # 找到self.floors的最小值當起點(ex.'_99.45')
+        lowest_floor = min(self.__floors, key=lambda x: x.get_elevation())
         for floor in self.__floors:
             transportations = floor.get_transportations()
             for transportation in transportations:
@@ -642,6 +645,21 @@ class Building:
                             transportation.get_id(), floor.get_elevation())
                         dijk_parent_dict = self.solutions[instance_str].shortest_paths[end_point_id][0]
                         # dijk_distance = self.solutions[instance_str].shortest_paths[end_point_id][1][vertex_id]
+
+                        # 查詢同一情境, 不同出口的最遠起點
+                        findTheStart = self.solutions[instance_str].shortest_paths[end_point_id][1]
+                        starts = dict()
+                        for start in findTheStart:
+                            if '_' + str(lowest_floor.get_elevation()) in start:
+                                starts[start] = findTheStart[start]
+                        vertex_id = max(starts, key=starts.get)
+                        vertex_ids = sorted(starts, key=starts.get) # 依所有路徑長度排序
+
+                        sameDistances = dict()
+                        for sameDistance in starts:
+                            if findTheStart[vertex_id] == starts[sameDistance]:
+                                sameDistances[sameDistance] = starts[sameDistance]
+
                         if not vertex_id in dijk_parent_dict:
                             raise ValueError("Invalid start point.")
 
@@ -691,7 +709,7 @@ class Building:
             logging.error("建物抽象圖編輯錯誤！")
             messagebox.showerror("", "建物抽象圖編輯錯誤，請檢查是否合法有逃生路徑失效。")
 
-        # 找到self.floors的最小值當起點
+        # 找到self.floors的最小值當起點(ex.'_99.45')
         min_elev = self.__floors[0].get_elevation()
         for f in self.__floors:
             if f.get_elevation() < min_elev:
@@ -770,11 +788,7 @@ class Building:
             untraversed_start_point_ids = list(
                 self.sol_table_dict[(preventzone_id, transportation_id)].keys())
             while len(untraversed_start_point_ids) != 0:
-                # trueOrFalse = untraversed_start_point_ids.__contains__('99.45')
-                # for x in untraversed_start_point_ids:
-                #     if '99.45' in x:
-                #         current_start_id = x
-                #         break
+                # 最低樓層(ex.'_99.45')
                 current_start_id = untraversed_start_point_ids[0]
                 nearest_end_point_id = min(self.sol_table_dict[(preventzone_id, transportation_id)][current_start_id], key=self.sol_table_dict[(
                     preventzone_id, transportation_id)][current_start_id].get)
