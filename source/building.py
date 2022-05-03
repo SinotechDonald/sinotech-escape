@@ -135,6 +135,8 @@ class Building:
             transportations_path (str): 傳送點資訊相對路徑
 
         """
+        # 修改內容, 把樓梯都更換為電扶梯
+        msgBox = messagebox.askquestion("SinoPath", "是否將樓梯加入失效情境運算?")
 
         self.__xml_md5 = "{}_{}".format(
             hashlib.md5(open(contours_path, 'rb').read()).hexdigest(),
@@ -163,7 +165,7 @@ class Building:
         threads = list()
         threads.append(threading.Thread(
             target=self.__load_contours,
-            args=(contours_path, )
+            args=(contours_path, msgBox)
         ))
         threads[-1].start()
 
@@ -172,14 +174,13 @@ class Building:
 
         logging.info('Done loading!')
 
-    def __load_contours(self, contours_path):
+    def __load_contours(self, contours_path, msgBox):
         """解析xml檔案中的輪廓，並將資訊存入在self.__floors中對應的樓層物件中。
 
         Args:
             contours_path (str): 建物輪廓相對路徑
 
         """
-
         with open(contours_path, "rb") as f:
             logging.info("讀取 gbXML 檔案 ...")
             buf = f.read()
@@ -195,6 +196,12 @@ class Building:
                          "UndergroundWall", "UndergroundSlab"]
 
         sent_points = soup.find("SentPoint").find_all("Element")
+        # 修改內容, 把樓梯都更換為電扶梯
+        if msgBox == 'yes':
+            for sent_point in sent_points:
+                if sent_point.attrs['Category'] == '樓梯':
+                    sent_point.attrs['Category'] = '電扶梯'
+            
         # We need stable-unique so this magic operation is neccessary
         floor_names = np.array([point.get("Level") for point in sent_points])
         floor_names = floor_names[sorted(
