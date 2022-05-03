@@ -145,11 +145,11 @@ class Floor:
         if os.path.exists(os.path.join("util", "DFLiHei-Bd.ttc")):
             font = FontProperties(fname=os.path.join(
                 "util", "DFLiHei-Bd.ttc"), size=1)
-        # else:
-        #     font = FontProperties(fname=os.path.join(
-        #         sys._MEIPASS, "ttc", "DFLiHei-Bd.ttc"), size=1)
         else:
-            font = FontProperties(fname=r"C:/Prj/Python/sinotech-escape/tools/DFLiHei-Bd.ttc",size=1)
+            font = FontProperties(fname=os.path.join(
+                sys._MEIPASS, "ttc", "DFLiHei-Bd.ttc"), size=1)
+        # else:
+        #     font = FontProperties(fname=r"C:/Prj/Python/sinotech-escape/tools/DFLiHei-Bd.ttc",size=1)
         
         if self.__contour != None:
             logging.debug("plot contour")

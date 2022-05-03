@@ -50,8 +50,8 @@ class TkApp:
 
         self.xml_label = Label(self.root, text=self.xml_path)
         self.xml_label.config(font=("Courier", 8))
-        self.xml_label['text'] = "D:/逃生路徑/_LG10/gbXML/LG10_Extended.xml"
-        self.xml_path = "D:/逃生路徑/_LG10/gbXML/LG10_Extended.xml"
+        # self.xml_label['text'] = "D:/逃生路徑/_LG10/gbXML/LG10_Extended.xml"
+        # self.xml_path = "D:/逃生路徑/_LG10/gbXML/LG10_Extended.xml"
         self.xml_label.pack()
 
         buttonCommit1 = Button(
@@ -70,8 +70,8 @@ class TkApp:
 
         input_cache_label = Label(self.root, text=self.input_cache_dir)
         input_cache_label.config(font=("Courier", 8))
-        input_cache_label['text'] = "D:/逃生路徑/_LG10/Input cache"
-        self.input_cache_dir = "D:/逃生路徑/_LG10/Input cache"
+        # input_cache_label['text'] = "D:/逃生路徑/_LG10/Input cache"
+        # self.input_cache_dir = "D:/逃生路徑/_LG10/Input cache"
         input_cache_label.pack()
 
         buttonCommit2 = Button(
@@ -89,8 +89,8 @@ class TkApp:
 
         output_cache_label = Label(self.root, text=self.input_cache_dir)
         output_cache_label.config(font=("Courier", 8))
-        output_cache_label['text'] = "D:/逃生路徑/_LG10/Output cache"
-        self.output_cache_dir = "D:/逃生路徑/_LG10/Output cache"
+        # output_cache_label['text'] = "D:/逃生路徑/_LG10/Output cache"
+        # self.output_cache_dir = "D:/逃生路徑/_LG10/Output cache"
         output_cache_label.pack()
 
         buttonCommit2 = Button(
@@ -108,8 +108,8 @@ class TkApp:
 
         output_label = Label(self.root, text=self.output_dir)
         output_label.config(font=("Courier", 8))
-        output_label['text'] = "D:/逃生路徑/_LG10/Output directory"
-        self.output_dir = "D:/逃生路徑/_LG10/Output directory"
+        # output_label['text'] = "D:/逃生路徑/_LG10/Output directory"
+        # self.output_dir = "D:/逃生路徑/_LG10/Output directory"
         output_label.pack()
 
         buttonCommit2 = Button(
@@ -315,15 +315,15 @@ class TkApp:
                 title="",
                 prompt="Input instance_str:"
             )
-            # start_point = simpledialog.askstring(
-            #     title="",
-            #     prompt="Input start point:"
-            # )
+            start_point = simpledialog.askstring(
+                title="",
+                prompt="Input start point:"
+            )
 
             failed_endpoints = self.building.plot_sol(
                 "2",
-                # start_point,
-                "",
+                start_point,
+                # "",
                 instance_str
             )
             if len(failed_endpoints):
