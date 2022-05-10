@@ -1,3 +1,4 @@
+from doctest import OutputChecker
 import os
 import gc
 import sys
@@ -9,6 +10,8 @@ import matplotlib.pyplot as plt
 
 from io import BytesIO
 from tkinter import messagebox
+import tkinter as tk
+from tkinter import filedialog
 from matplotlib.font_manager import FontProperties
 
 from util.structure.graph import Graph
@@ -31,11 +34,11 @@ class Editor:
             if os.path.exists(os.path.join("util", "DFLiHei-Bd.ttc")):
                 self.__font = FontProperties(fname=os.path.join(
                     "util", "DFLiHei-Bd.ttc"), size=1)
-            else:
-                self.__font = FontProperties(fname=os.path.join(
-                    sys._MEIPASS, "ttc", "DFLiHei-Bd.ttc"), size=1)
             # else:
-            #     self.__font = FontProperties(fname=r"C:/Prj/Python/sinotech-escape/tools/DFLiHei-Bd.ttc",size=1)
+            #     self.__font = FontProperties(fname=os.path.join(
+            #         sys._MEIPASS, "ttc", "DFLiHei-Bd.ttc"), size=1)
+            else:
+                self.__font = FontProperties(fname=r"C:/Prj/Python/sinotech-escape/tools/DFLiHei-Bd.ttc",size=1)
         else:
             self.__font = FontProperties(fname=ttc_path)
         self.__press_time = None
@@ -323,9 +326,22 @@ class Editor:
         plt.switch_backend('Agg')
 
         is_saving = (messagebox.askquestion("", "要儲存目前變更嗎？") == "yes")
+        if is_saving:
+            root = tk.Tk()
+            root.withdraw()
+            file_path = filedialog.askdirectory(parent=root)
+            # os.path.exists(path) 判斷檔案是否存在 固定語法，記住就行
+            # 定義一個變數判斷檔案是否存在,path指代路徑,str(i)指代資料夾的名字
+            # name+str(i+1)為拼接 名稱，效果為：Python劍雅1，Python劍雅2...
+            # str(i+1)提高使用者體驗1，2，3，...
+            isExists = os.path.exists(file_path + "\\" + "123.txt")
+            if not isExists:
+                # os.path.exists(path+str(i)) 建立資料夾 路徑+名稱
+                os.makedirs(file_path + "\\" + "123.txt")
+
         logging.info("Saving: {}".format(is_saving))
 
-        return self.__grid_graph if is_saving else backup_grid_graph
+        return self.__grid_graph, is_saving if is_saving else backup_grid_graph, is_saving
 
 
 class Operations:
