@@ -7,11 +7,14 @@ import threading
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import tkinter as tk
 
 from rich import print
 from typing import List
 from bs4 import BeautifulSoup
 from tkinter import messagebox
+from tkinter import filedialog
+from datetime import datetime
 
 from floor import Floor
 from util.structure.graph import Graph
@@ -123,7 +126,7 @@ class Building:
             )
         )
 
-    def load_infos(self, contours_path):
+    def load_infos(self, contours_path, msgBox):
         """建物資訊讀取介面。
 
         Args:
@@ -135,8 +138,6 @@ class Building:
             transportations_path (str): 傳送點資訊相對路徑
 
         """
-        # 修改內容, 把樓梯都更換為電扶梯
-        msgBox = messagebox.askquestion("SinoPath", "是否將樓梯加入失效情境運算?")
 
         self.__xml_md5 = "{}_{}".format(
             hashlib.md5(open(contours_path, 'rb').read()).hexdigest(),
@@ -156,8 +157,11 @@ class Building:
                     ])
                     self.__floors = list()
                     for cache_path in floor_cache_paths:
-                        with open(os.path.join(self.__cache_dir, cache_path), "rb") as f:
-                            self.__floors.append(pickle.load(f))
+                        try:
+                            with open(os.path.join(self.__cache_dir, cache_path), "rb") as f:
+                                self.__floors.append(pickle.load(f))
+                        except:
+                            logging.info("cache資料損毀")
                     # 依高程排序
                     self.__floors = sorted(self.__floors, key= lambda s: s.get_elevation())
                     return
@@ -366,7 +370,13 @@ class Building:
             )
         ]
 
-        self.__floors[selected_floor_idx].edit_graph_gui(self.__use_cache)
+        is_saving = self.__floors[selected_floor_idx].edit_graph_gui(self.__use_cache)        
+
+        if is_saving:
+            root = tk.Tk()
+            root.withdraw()
+            self.__cache_dir = filedialog.askdirectory(parent=root)            
+
         if self.__use_cache:
             with open(self.__get_cache_path(self.__floors[selected_floor_idx].get_name()), "wb") as f:
                 pickle.dump(self.__floors[selected_floor_idx], f)
@@ -864,8 +874,9 @@ class Building:
                 error = 'error'
 
         # dump sol table to file
+        nowTime = datetime.now().strftime('%Y-%m-%d_%H-%M-%S') #取得當前時間
         sol_table.to_csv(os.path.join(self.__output_dir,
-                         'results.csv'), index=False, encoding="utf_8_sig")
+                         'results_' + nowTime + '.csv'), index=False, encoding="utf_8_sig")
 
     def which_preventzone(self, vertex_id):
         """給定 vertex_id 並回傳其所在防煙區劃之 id。

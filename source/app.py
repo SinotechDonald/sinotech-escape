@@ -74,7 +74,8 @@ def main():
     messagebox.showinfo("執行結束", "Click to close")
 
     end_time = time.perf_counter()
-    logging.info("執行結束！共花費 {} 秒。".format(end_time - start_time))
+    spendTime = time.strftime("%H:%M:%S", time.gmtime(end_time - start_time))
+    logging.info("執行結束！共花費 " + spendTime + " 秒。")
 
 
 if __name__ == "__main__":

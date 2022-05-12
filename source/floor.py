@@ -567,9 +567,12 @@ class Floor:
         # if self.__name == '平均地面高程':
         editor = Editor(self.__contour, self.__grid_graph,
                         self.__transportations, self.__elevation, self.__density)
-        self.__grid_graph = editor.start_editor(use_cache)[0]
-        is_saving = editor.start_editor(use_cache)[1]
-        print(is_saving)
+        isSaveGraph = editor.start_editor(use_cache)
+        self.__grid_graph = isSaveGraph[0]
+        is_saving = isSaveGraph[1]
+        
+        return is_saving
+
         # else:
         #     logging.warning("先 pass 這些層！")
 

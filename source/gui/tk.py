@@ -1,7 +1,10 @@
+from fileinput import filename
 import os
 from posixpath import join
 import shutil
 import logging
+import time
+import datetime
 
 from tkinter import Tk, messagebox, filedialog, Label, Button, simpledialog
 from tkinter.constants import NONE
@@ -29,12 +32,12 @@ class TkApp:
 
         self.meta_file_path = None
         self.xml_path = None
-        self.output_dir = None
-        self.input_cache_dir = None
+        # self.input_cache_dir = None
         self.output_cache_dir = None
+        self.output_dir = None
 
         self.root = Tk()
-        self.root.title("SinoPath Beta")
+        self.root.title("SinoPath")
         # self.root.geometry("720x480")
 
         # 置中
@@ -58,7 +61,7 @@ class TkApp:
             self.root,
             height=1,
             width=20,
-            text="Select gbxml File",
+            text="gbXML檔案",
             command=lambda: self.__handleChangeFile(
                 self.xml_label,
                 "Please select a extended gbXML file",
@@ -68,36 +71,39 @@ class TkApp:
         )
         buttonCommit1.pack()
 
-        input_cache_label = Label(self.root, text=self.input_cache_dir)
-        input_cache_label.config(font=("Courier", 8))
-        input_cache_label['text'] = "D:/逃生路徑/_LG10/Input cache"
-        self.input_cache_dir = "D:/逃生路徑/_LG10/Input cache"
-        input_cache_label.pack()
+        # input_cache_label = Label(self.root, text=self.input_cache_dir)
+        # input_cache_label.config(font=("Courier", 8))
+        # input_cache_label['text'] = "D:/逃生路徑/_LG10/Input cache"
+        # self.input_cache_dir = "D:/逃生路徑/_LG10/Input cache"
+        # input_cache_label.pack()
 
-        buttonCommit2 = Button(
-            self.root,
-            height=1,
-            width=20,
-            text="Input cache directory",
-            command=lambda: self.__handleChangeDir(
-                input_cache_label,
-                "Select a input cache directory",
-                1
-            )
-        )
-        buttonCommit2.pack()
+        # buttonCommit2 = Button(
+        #     self.root,
+        #     height=1,
+        #     width=20,
+        #     text="Input cache directory",
+        #     command=lambda: self.__handleChangeDir(
+        #         input_cache_label,
+        #         "Select a input cache directory",
+        #         1
+        #     )
+        # )
+        # buttonCommit2.pack()
 
-        output_cache_label = Label(self.root, text=self.input_cache_dir)
+        output_cache_label = Label(self.root, text=self.output_cache_dir)
+        # output_cache_label = Label(self.root, text=self.input_cache_dir) # <-- 台大原本這樣寫
         output_cache_label.config(font=("Courier", 8))
-        output_cache_label['text'] = "D:/逃生路徑/_LG10/Output cache"
-        self.output_cache_dir = "D:/逃生路徑/_LG10/Output cache"
+        # output_cache_label['text'] = "D:/逃生路徑/_LG10/Output cache"
+        # self.output_cache_dir = "D:/逃生路徑/_LG10/Output cache"
+        output_cache_label['text'] = "D:/逃生路徑/_LG10/Test"
+        self.output_cache_dir = "D:/逃生路徑/_LG10/Test"
         output_cache_label.pack()
 
         buttonCommit2 = Button(
             self.root,
             height=1,
             width=20,
-            text="Output cache directory",
+            text="cache輸出路徑",
             command=lambda: self.__handleChangeDir(
                 output_cache_label,
                 "Select a Output cache directory",
@@ -116,7 +122,7 @@ class TkApp:
             self.root,
             height=1,
             width=20,
-            text="Output directory",
+            text="結果輸出路徑",
             command=lambda: self.__handleChangeDir(
                 output_label,
                 "Please select a output directory",
@@ -133,7 +139,7 @@ class TkApp:
             self.root,
             height=1,
             width=20,
-            text="Run Analysis",
+            text="分析運算",
             command=lambda: self.__handleRun()
         )
         buttonCommit2.pack()
@@ -142,17 +148,36 @@ class TkApp:
 
         self.root.mainloop()
 
-    def __reset_cache(self, input_dir: str, output_dir: str, suffix: str = ".pickle") -> None:
-        if input_dir == output_dir:
-            return
+    def __reset_cache(self, output_dir: str, suffix: str = ".pickle") -> None:
         if not os.path.exists(output_dir):
             os.makedirs(output_dir, exist_ok=True)
-        for path in os.listdir(input_dir):
-            if suffix in path:
-                shutil.copy(
-                    os.path.join(input_dir, path),
-                    os.path.join(output_dir, path)
-                )
+            
+    # 台大原本這樣寫
+    # def __reset_cache(self, input_dir: str, output_dir: str, suffix: str = ".pickle") -> None:
+    #     if input_dir == output_dir:
+    #         return
+    #     if not os.path.exists(output_dir):
+    #         os.makedirs(output_dir, exist_ok=True)
+    #     for path in os.listdir(input_dir):
+    #         if suffix in path:
+    #             shutil.copy(
+    #                 os.path.join(input_dir, path),
+    #                 os.path.join(output_dir, path)
+    #             )
+
+    def __copy_cache(self, suffix: str = ".pickle"):
+
+        for dir in os.walk(self.output_cache_dir): # 搜尋底下所有子資料夾
+            os.chdir(dir[0])
+            directory = os.getcwd()
+            if not os.path.samefile(self.output_cache_dir, directory):
+                for fileName in os.listdir(self.output_cache_dir):
+                    if suffix in fileName:
+                        if not os.path.exists(os.path.join(directory, fileName)):                            
+                            shutil.copy(
+                                os.path.join(self.output_cache_dir, fileName),
+                                os.path.join(directory, fileName)
+                            )
 
     def __handleChangeFile(self, target_label: Label, title_: str, type: str, default_path: str) -> None:
         target_label["text"] = os.path.join(
@@ -182,13 +207,20 @@ class TkApp:
             self.output_cache_dir = target_label["text"]
 
     def __handleRun(self):
+    
+        # 檢核Output cache所有子資料夾中, 是否都有完整的cache
+        self.__copy_cache()
 
         if (not self.xml_path or ".xml" not in self.xml_path) \
                 or not self.output_dir:
             messagebox.showwarning("Warning", "Please choose some files.")
             return
 
-        self.__reset_cache(self.input_cache_dir, self.output_cache_dir)
+        self.__reset_cache(self.output_cache_dir)
+        # self.__reset_cache(self.input_cache_dir, self.output_cache_dir)
+
+        # 修改內容, 把樓梯都更換為電扶梯
+        msgBox = messagebox.askquestion("SinoPath", "是否將樓梯加入失效情境運算?")
 
         self.building = Building(
             density=(0.2 ** 0.5),
@@ -197,53 +229,76 @@ class TkApp:
             output_dir=self.output_dir
         )
         self.building.load_infos(
-            contours_path=self.xml_path
+            contours_path=self.xml_path,
+            msgBox=msgBox
         )
 
         self.building.to_grid_graph()
         while messagebox.askquestion("SinoPath", "Open Editor?") == "yes":
             self.root.update()
             self.building.edit_graph_gui()
-        self.building.connect_floors()
-        self.building.instances_analysis()
-        self.building.calculate_reverse_table()
+        
+        start_time = time.perf_counter()
 
-        while not self.__check_output_dir_existence_and_premission(self.output_dir):
-            self.output_dir = filedialog.askdirectory(
-                title="輸出資料夾不存在或權限錯誤，請重新選擇"
+        # 搜尋Output cache資料夾中, 所有子資料夾
+        for dir in os.walk(self.output_cache_dir): # 搜尋底下所有子資料夾
+            os.chdir(dir[0])
+            self.output_cache_dir = os.getcwd()
+
+            self.building = Building(
+                density=(0.2 ** 0.5),
+                use_cache=True,
+                cache_dir=self.output_cache_dir,
+                output_dir=self.output_dir
             )
-            self.building.update_output_dir(self.output_dir)
+            self.building.load_infos(
+                contours_path=self.xml_path,
+                msgBox=msgBox
+            )
 
-        self.building.dump_sol_table()
+            self.building.connect_floors()
+            self.building.instances_analysis()
+            self.building.calculate_reverse_table()
 
-        messagebox.showinfo("完成", "成功分析逃生路徑")
+            while not self.__check_output_dir_existence_and_premission(self.output_dir):
+                self.output_dir = filedialog.askdirectory(
+                    title="輸出資料夾不存在或權限錯誤，請重新選擇"
+                )
+                self.building.update_output_dir(self.output_dir)
+
+            self.building.dump_sol_table()
+
+        end_time = time.perf_counter()
+        spendTime = time.strftime("%H:%M:%S", time.gmtime(end_time - start_time))
+        logging.info("執行結束！共花費 " + spendTime + " 秒。")
+        messagebox.showinfo("完成", "成功分析逃生路徑！共花費 " + spendTime + " 秒。")
 
         if not self.plotBtn:
             _ = Label(self.root, text="")
             _.config(font=("Courier", 12))
             _.pack()
-            _ = Label(self.root, text="第一階段")
+            _ = Label(self.root, text="路徑輸出")
             _.config(font=("Courier", 12))
             _.pack()
             self.plotBtn = Button(
                 self.root,
                 height=1,
                 width=14,
-                text="運行第一階段",
+                text="路徑輸出",
                 command=lambda: self.__handlePlot(0)
             )
             self.plotBtn.pack()
-            _ = Label(self.root, text="第二階段")
-            _.config(font=("Courier", 12))
-            _.pack()
-            stageTwoBtn = Button(
-                self.root,
-                height=1,
-                width=14,
-                text="運行第二階段",
-                command=lambda: self.__handleStageTwo()
-            )
-            stageTwoBtn.pack()
+            # _ = Label(self.root, text="第二階段")
+            # _.config(font=("Courier", 12))
+            # _.pack()
+            # stageTwoBtn = Button(
+            #     self.root,
+            #     height=1,
+            #     width=14,
+            #     text="運行第二階段",
+            #     command=lambda: self.__handleStageTwo()
+            # )
+            # stageTwoBtn.pack()
 
     def __check_output_dir_existence_and_premission(self, output_dir: str) -> bool:
         if not os.path.exists(output_dir):

@@ -10,8 +10,6 @@ import matplotlib.pyplot as plt
 
 from io import BytesIO
 from tkinter import messagebox
-import tkinter as tk
-from tkinter import filedialog
 from matplotlib.font_manager import FontProperties
 
 from util.structure.graph import Graph
@@ -221,8 +219,8 @@ class Editor:
         plt.title("")
         plt.draw()
 
-    def start_editor(self, use_cache) -> Graph:
-
+    # def start_editor(self, use_cache) -> Graph:
+    def start_editor(self, use_cache):
         if not use_cache:
             if messagebox.askquestion("Not using cache, run GUI for test only?") != "yes":
                 return self.__grid_graph
@@ -326,22 +324,10 @@ class Editor:
         plt.switch_backend('Agg')
 
         is_saving = (messagebox.askquestion("", "要儲存目前變更嗎？") == "yes")
-        if is_saving:
-            root = tk.Tk()
-            root.withdraw()
-            file_path = filedialog.askdirectory(parent=root)
-            # os.path.exists(path) 判斷檔案是否存在 固定語法，記住就行
-            # 定義一個變數判斷檔案是否存在,path指代路徑,str(i)指代資料夾的名字
-            # name+str(i+1)為拼接 名稱，效果為：Python劍雅1，Python劍雅2...
-            # str(i+1)提高使用者體驗1，2，3，...
-            isExists = os.path.exists(file_path + "\\" + "123.txt")
-            if not isExists:
-                # os.path.exists(path+str(i)) 建立資料夾 路徑+名稱
-                os.makedirs(file_path + "\\" + "123.txt")
 
         logging.info("Saving: {}".format(is_saving))
 
-        return self.__grid_graph, is_saving if is_saving else backup_grid_graph, is_saving
+        return (self.__grid_graph, is_saving) if is_saving else (backup_grid_graph, is_saving)
 
 
 class Operations:
