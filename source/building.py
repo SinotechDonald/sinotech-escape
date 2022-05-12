@@ -421,10 +421,10 @@ class Building:
                         ) - transportation_dict[vertex_id][1])  # 新減舊
                         vertical_moving_speed = 1 # 修改垂直距離佈點
                         parallel_moving_speed = 1
-                        # # 模擬垂直距離佈點數
-                        # append_num = np.ceil(elevation_gap / self.__density / (
-                        #     vertical_moving_speed / parallel_moving_speed)).astype(int)  # ceiling
-                        append_num = 2 # 連結佈點只留起終點, 盡量減低垂直距離計算
+                        # 模擬垂直距離佈點數
+                        append_num = np.ceil(elevation_gap / self.__density / (
+                            vertical_moving_speed / parallel_moving_speed)).astype(int)  # ceiling
+                        # append_num = 2 # 連結佈點只留起終點, 盡量減低垂直距離計算
                         for cnt in range(append_num):
                             if cnt == 0:  # 頭
                                 self.__total_graph.add_vertex(Vertex(vertex_obj.get_coordinate()[0], vertex_obj.get_coordinate()[1], floor.get_elevation(

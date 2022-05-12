@@ -53,8 +53,8 @@ class TkApp:
 
         self.xml_label = Label(self.root, text=self.xml_path)
         self.xml_label.config(font=("Courier", 8))
-        self.xml_label['text'] = "D:/逃生路徑/_LG10/gbXML/LG10_Extended.xml"
-        self.xml_path = "D:/逃生路徑/_LG10/gbXML/LG10_Extended.xml"
+        # self.xml_label['text'] = "D:/逃生路徑/_LG10/gbXML/LG10_Extended.xml"
+        # self.xml_path = "D:/逃生路徑/_LG10/gbXML/LG10_Extended.xml"
         self.xml_label.pack()
 
         buttonCommit1 = Button(
@@ -95,8 +95,6 @@ class TkApp:
         output_cache_label.config(font=("Courier", 8))
         # output_cache_label['text'] = "D:/逃生路徑/_LG10/Output cache"
         # self.output_cache_dir = "D:/逃生路徑/_LG10/Output cache"
-        output_cache_label['text'] = "D:/逃生路徑/_LG10/Test"
-        self.output_cache_dir = "D:/逃生路徑/_LG10/Test"
         output_cache_label.pack()
 
         buttonCommit2 = Button(
@@ -114,8 +112,8 @@ class TkApp:
 
         output_label = Label(self.root, text=self.output_dir)
         output_label.config(font=("Courier", 8))
-        output_label['text'] = "D:/逃生路徑/_LG10/Output directory"
-        self.output_dir = "D:/逃生路徑/_LG10/Output directory"
+        # output_label['text'] = "D:/逃生路徑/_LG10/Output directory"
+        # self.output_dir = "D:/逃生路徑/_LG10/Output directory"
         output_label.pack()
 
         buttonCommit2 = Button(
@@ -165,6 +163,7 @@ class TkApp:
     #                 os.path.join(output_dir, path)
     #             )
 
+    # 檢核Output cache所有子資料夾中, 是否都有完整的cache, 將Output cache的.pickle檔複製過去
     def __copy_cache(self, suffix: str = ".pickle"):
 
         for dir in os.walk(self.output_cache_dir): # 搜尋底下所有子資料夾
@@ -207,9 +206,6 @@ class TkApp:
             self.output_cache_dir = target_label["text"]
 
     def __handleRun(self):
-    
-        # 檢核Output cache所有子資料夾中, 是否都有完整的cache
-        self.__copy_cache()
 
         if (not self.xml_path or ".xml" not in self.xml_path) \
                 or not self.output_dir:
@@ -239,6 +235,9 @@ class TkApp:
             self.building.edit_graph_gui()
         
         start_time = time.perf_counter()
+    
+        # 檢核Output cache所有子資料夾中, 是否都有完整的cache, 將Output cache的.pickle檔複製過去
+        self.__copy_cache()
 
         # 搜尋Output cache資料夾中, 所有子資料夾
         for dir in os.walk(self.output_cache_dir): # 搜尋底下所有子資料夾
