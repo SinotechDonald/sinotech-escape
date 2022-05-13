@@ -3,6 +3,7 @@ import math
 import pickle
 import hashlib
 import logging
+from posixpath import basename
 import threading
 import numpy as np
 import pandas as pd
@@ -424,7 +425,8 @@ class Building:
                         # 模擬垂直距離佈點數
                         append_num = np.ceil(elevation_gap / self.__density / (
                             vertical_moving_speed / parallel_moving_speed)).astype(int)  # ceiling
-                        # append_num = 2 # 連結佈點只留起終點, 盡量減低垂直距離計算
+                        # # 連結佈點只留起終點, 盡量減低垂直距離計算
+                        # append_num = 2
                         for cnt in range(append_num):
                             if cnt == 0:  # 頭
                                 self.__total_graph.add_vertex(Vertex(vertex_obj.get_coordinate()[0], vertex_obj.get_coordinate()[1], floor.get_elevation(
@@ -875,8 +877,10 @@ class Building:
 
         # dump sol table to file
         nowTime = datetime.now().strftime('%Y-%m-%d_%H-%M-%S') #取得當前時間
+        # 路徑資料夾名
+        basename = os.path.basename(self.__output_dir) + "_" + nowTime
         sol_table.to_csv(os.path.join(self.__output_dir,
-                         'results_' + nowTime + '.csv'), index=False, encoding="utf_8_sig")
+                         'results_' + basename + '.csv'), index=False, encoding="utf_8_sig")
 
     def which_preventzone(self, vertex_id):
         """給定 vertex_id 並回傳其所在防煙區劃之 id。

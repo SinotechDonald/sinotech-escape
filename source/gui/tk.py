@@ -53,8 +53,8 @@ class TkApp:
 
         self.xml_label = Label(self.root, text=self.xml_path)
         self.xml_label.config(font=("Courier", 8))
-        # self.xml_label['text'] = "D:/逃生路徑/_LG10/gbXML/LG10_Extended.xml"
-        # self.xml_path = "D:/逃生路徑/_LG10/gbXML/LG10_Extended.xml"
+        self.xml_label['text'] = "D:/逃生路徑/_LG10/gbXML/LG10_Extended.xml"
+        self.xml_path = "D:/逃生路徑/_LG10/gbXML/LG10_Extended.xml"
         self.xml_label.pack()
 
         buttonCommit1 = Button(
@@ -93,8 +93,8 @@ class TkApp:
         output_cache_label = Label(self.root, text=self.output_cache_dir)
         # output_cache_label = Label(self.root, text=self.input_cache_dir) # <-- 台大原本這樣寫
         output_cache_label.config(font=("Courier", 8))
-        # output_cache_label['text'] = "D:/逃生路徑/_LG10/Output cache"
-        # self.output_cache_dir = "D:/逃生路徑/_LG10/Output cache"
+        output_cache_label['text'] = "D:/逃生路徑/_LG10/Output cache"
+        self.output_cache_dir = "D:/逃生路徑/_LG10/Output cache"
         output_cache_label.pack()
 
         buttonCommit2 = Button(
@@ -112,8 +112,8 @@ class TkApp:
 
         output_label = Label(self.root, text=self.output_dir)
         output_label.config(font=("Courier", 8))
-        # output_label['text'] = "D:/逃生路徑/_LG10/Output directory"
-        # self.output_dir = "D:/逃生路徑/_LG10/Output directory"
+        output_label['text'] = "D:/逃生路徑/_LG10/Output directory"
+        self.output_dir = "D:/逃生路徑/_LG10/Output directory"
         output_label.pack()
 
         buttonCommit2 = Button(
@@ -141,6 +141,21 @@ class TkApp:
             command=lambda: self.__handleRun()
         )
         buttonCommit2.pack()
+
+
+        _ = Label(self.root, text="")
+        _.config(font=("Courier", 12))
+        _.pack()
+        buttonCommit2 = Button(
+            self.root,
+            height=1,
+            width=14,
+            text="路徑輸出",
+            command=lambda: self.__handlePlot(0)
+        )
+        
+        buttonCommit2.pack()
+
 
         self.plotBtn = None
 
@@ -272,21 +287,21 @@ class TkApp:
         logging.info("執行結束！共花費 " + spendTime + " 秒。")
         messagebox.showinfo("完成", "成功分析逃生路徑！共花費 " + spendTime + " 秒。")
 
-        if not self.plotBtn:
-            _ = Label(self.root, text="")
-            _.config(font=("Courier", 12))
-            _.pack()
-            _ = Label(self.root, text="路徑輸出")
-            _.config(font=("Courier", 12))
-            _.pack()
-            self.plotBtn = Button(
-                self.root,
-                height=1,
-                width=14,
-                text="路徑輸出",
-                command=lambda: self.__handlePlot(0)
-            )
-            self.plotBtn.pack()
+        # if not self.plotBtn:
+        #     _ = Label(self.root, text="")
+        #     _.config(font=("Courier", 12))
+        #     _.pack()
+        #     _ = Label(self.root, text="路徑輸出")
+        #     _.config(font=("Courier", 12))
+        #     _.pack()
+        #     self.plotBtn = Button(
+        #         self.root,
+        #         height=1,
+        #         width=14,
+        #         text="路徑輸出",
+        #         command=lambda: self.__handlePlot(0)
+        #     )
+        #     self.plotBtn.pack()
             # _ = Label(self.root, text="第二階段")
             # _.config(font=("Courier", 12))
             # _.pack()
@@ -322,6 +337,29 @@ class TkApp:
             return False
 
     def __handlePlot(self, type: int):
+        
+        # 選擇要運行情境的cache資料夾
+        root = Tk()
+        root.withdraw()
+        self.output_cache_dir = filedialog.askdirectory(parent=root)
+        
+        self.building = Building(
+            density=(0.2 ** 0.5),
+            use_cache=True,
+            cache_dir=self.output_cache_dir,
+            output_dir=self.output_dir
+        )
+        self.building.load_infos(
+            contours_path=self.xml_path,
+            msgBox='no'
+        )
+        
+        self.building.to_grid_graph()
+
+        self.building.connect_floors()
+        self.building.instances_analysis()
+        self.building.calculate_reverse_table()
+
         while not self.__check_output_dir_existence_and_premission(self.output_dir):
             self.output_dir = filedialog.askdirectory(
                 title="輸出資料夾不存在或權限錯誤，請重新選擇"

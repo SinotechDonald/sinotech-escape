@@ -1,6 +1,7 @@
 from doctest import OutputChecker
 import os
 import gc
+from pathlib import WindowsPath
 import sys
 import time
 import copy
@@ -30,13 +31,12 @@ class Editor:
         self.__added_lines = dict()
         if not ttc_path:
             if os.path.exists(os.path.join("util", "DFLiHei-Bd.ttc")):
-                self.__font = FontProperties(fname=os.path.join(
-                    "util", "DFLiHei-Bd.ttc"), size=1)
+                self.__font = FontProperties(fname=os.path.join("util", "DFLiHei-Bd.ttc"), size=1)
             else:
-                self.__font = FontProperties(fname=os.path.join(
-                    sys._MEIPASS, "ttc", "DFLiHei-Bd.ttc"), size=1)
-            # else:
-            #     self.__font = FontProperties(fname=r"C:/Prj/Python/sinotech-escape/tools/DFLiHei-Bd.ttc",size=1)
+                try:
+                    self.__font = FontProperties(fname=os.path.join(sys._MEIPASS, "ttc", "DFLiHei-Bd.ttc"), size=1)
+                except:
+                    self.__font = FontProperties(fname=r"C:/Prj/Python/sinotech-escape/tools/DFLiHei-Bd.ttc",size=1)
         else:
             self.__font = FontProperties(fname=ttc_path)
         self.__press_time = None
