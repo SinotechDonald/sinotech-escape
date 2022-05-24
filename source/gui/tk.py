@@ -5,10 +5,12 @@ import shutil
 import logging
 import time
 import datetime
+import pandas as pd
 
 from tkinter import Tk, messagebox, filedialog, Label, Button, simpledialog
 from tkinter.constants import NONE
 from util.structure.transportation import Transportation
+from datetime import datetime
 
 from building import Building
 from gui.stage_two import get_prevent_zone_id
@@ -53,8 +55,8 @@ class TkApp:
 
         self.xml_label = Label(self.root, text=self.xml_path)
         self.xml_label.config(font=("Courier", 8))
-        self.xml_label['text'] = "D:/逃生路徑/_LG10/gbXML/LG10_Extended.xml"
-        self.xml_path = "D:/逃生路徑/_LG10/gbXML/LG10_Extended.xml"
+        # self.xml_label['text'] = "D:/逃生路徑/_LG10/gbXML/LG10_Extended.xml"
+        # self.xml_path = "D:/逃生路徑/_LG10/gbXML/LG10_Extended.xml"
         self.xml_label.pack()
 
         buttonCommit1 = Button(
@@ -93,8 +95,8 @@ class TkApp:
         output_cache_label = Label(self.root, text=self.output_cache_dir)
         # output_cache_label = Label(self.root, text=self.input_cache_dir) # <-- 台大原本這樣寫
         output_cache_label.config(font=("Courier", 8))
-        output_cache_label['text'] = "D:/逃生路徑/_LG10/Output cache"
-        self.output_cache_dir = "D:/逃生路徑/_LG10/Output cache"
+        # output_cache_label['text'] = "D:/逃生路徑/_LG10/Output cache"
+        # self.output_cache_dir = "D:/逃生路徑/_LG10/Output cache"
         output_cache_label.pack()
 
         buttonCommit2 = Button(
@@ -112,8 +114,8 @@ class TkApp:
 
         output_label = Label(self.root, text=self.output_dir)
         output_label.config(font=("Courier", 8))
-        output_label['text'] = "D:/逃生路徑/_LG10/Output directory"
-        self.output_dir = "D:/逃生路徑/_LG10/Output directory"
+        # output_label['text'] = "D:/逃生路徑/_LG10/Output directory"
+        # self.output_dir = "D:/逃生路徑/_LG10/Output directory"
         output_label.pack()
 
         buttonCommit2 = Button(
@@ -250,7 +252,14 @@ class TkApp:
             self.building.edit_graph_gui()
         
         start_time = time.perf_counter()
-    
+
+        # 建立Excel儲存運算結果
+        nowTime = datetime.now().strftime('%Y-%m-%d_%H-%M-%S') #取得當前時間
+        writerPath = os.path.join(self.output_dir, 'results_' + nowTime + '.xlsx')
+        writer = pd.ExcelWriter(writerPath, engine="xlsxwriter")
+        writer.save()
+        writer.close()
+
         # 檢核Output cache所有子資料夾中, 是否都有完整的cache, 將Output cache的.pickle檔複製過去
         self.__copy_cache()
 
@@ -258,6 +267,9 @@ class TkApp:
         for dir in os.walk(self.output_cache_dir): # 搜尋底下所有子資料夾
             os.chdir(dir[0])
             self.output_cache_dir = os.getcwd()
+
+            # 路徑資料夾名設定為Sheet Name
+            sheetName = os.path.basename(self.output_cache_dir)
 
             self.building = Building(
                 density=(0.2 ** 0.5),
@@ -280,7 +292,9 @@ class TkApp:
                 )
                 self.building.update_output_dir(self.output_dir)
 
-            self.building.dump_sol_table()
+            # 匯出Excel檔
+            # self.building.dump_sol_table()
+            self.building.export_to_excel(writerPath, sheetName)
 
         end_time = time.perf_counter()
         spendTime = time.strftime("%H:%M:%S", time.gmtime(end_time - start_time))

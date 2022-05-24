@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import tkinter as tk
+from openpyxl import load_workbook
 
 from rich import print
 from typing import List
@@ -652,12 +653,27 @@ class Building:
         failed_endpoint_ids = list()
         if not instance_str in self.solutions:
             raise ValueError("invalid instance string!")
+
+        # 找到self.__floors所有終點, 比對同情境中起點時, 最短距離的路徑
+        is_end_points = dict()
+        for floor in self.__floors:
+            transportations = floor.get_transportations()
+            for transportation in transportations:
+                if transportation.is_end_point():
+                    try:
+                        end_point_id = self.__id_join(transportation.get_id(), floor.get_elevation())
+                        dijk_distance = self.solutions[instance_str].shortest_paths[end_point_id][1][vertex_id]
+                        is_end_points[transportation.get_id()] = dijk_distance
+                    except:
+                        print('path not found.')
+        shortest_end_id = min(is_end_points, key=lambda k: is_end_points[k])
+
         # 找到self.floors的最小值當起點(ex.'_99.45')
         lowest_floor = min(self.__floors, key=lambda x: x.get_elevation())
         for floor in self.__floors:
             transportations = floor.get_transportations()
             for transportation in transportations:
-                if transportation.is_end_point():
+                if transportation.is_end_point() and transportation.get_id() == shortest_end_id:
                     try:
                         # get path
                         end_point_id = self.__id_join(
@@ -665,19 +681,19 @@ class Building:
                         dijk_parent_dict = self.solutions[instance_str].shortest_paths[end_point_id][0]
                         # dijk_distance = self.solutions[instance_str].shortest_paths[end_point_id][1][vertex_id]
 
-                        # 查詢同一情境, 不同出口的最遠起點
-                        findTheStart = self.solutions[instance_str].shortest_paths[end_point_id][1]
-                        starts = dict()
-                        for start in findTheStart:
-                            if '_' + str(lowest_floor.get_elevation()) in start:
-                                starts[start] = findTheStart[start]
-                        vertex_id = max(starts, key=starts.get)
-                        vertex_ids = sorted(starts, key=starts.get) # 依所有路徑長度排序
+                        # # 查詢同一情境, 不同出口的最遠起點
+                        # findTheStart = self.solutions[instance_str].shortest_paths[end_point_id][1]
+                        # starts = dict()
+                        # for start in findTheStart:
+                        #     if '_' + str(lowest_floor.get_elevation()) in start:
+                        #         starts[start] = findTheStart[start]
+                        # vertex_id = max(starts, key=starts.get)
+                        # vertex_ids = sorted(starts, key=starts.get) # 依所有路徑長度排序
 
-                        sameDistances = dict()
-                        for sameDistance in starts:
-                            if findTheStart[vertex_id] == starts[sameDistance]:
-                                sameDistances[sameDistance] = starts[sameDistance]
+                        # sameDistances = dict()
+                        # for sameDistance in starts:
+                        #     if findTheStart[vertex_id] == starts[sameDistance]:
+                        #         sameDistances[sameDistance] = starts[sameDistance]
 
                         if not vertex_id in dijk_parent_dict:
                             raise ValueError("Invalid start point.")
@@ -881,6 +897,105 @@ class Building:
         basename = os.path.basename(self.__output_dir) + "_" + nowTime
         sol_table.to_csv(os.path.join(self.__output_dir,
                          'results_' + basename + '.csv'), index=False, encoding="utf_8_sig")
+
+    def export_to_excel(self, writerPath, sheetName):
+        """整理 Solution 結果，輸出 csv。
+        """
+
+        book = load_workbook(writerPath)
+        writer = pd.ExcelWriter(writerPath, engine='openpyxl')
+        writer.book = book
+
+        logging.info("正在輸出最險峻路徑表格")
+
+        sol_table = pd.DataFrame(
+            columns=["instance_str", "起點", "失效防煙區劃", "失效傳送點", "最險峻路徑長度", "起點位於防煙區劃", "終點", "終點編號", "路徑經過防煙區劃", "無法逃生座標點列表"])
+        for preventzone_id, transportation_id in self.sol_table_dict:  # for each instance
+            new_row = dict()
+
+            # 失效防煙區劃 and 失效傳送點
+            new_row["失效防煙區劃"] = self.get_preventzone_name_by_id(preventzone_id)
+            new_row["失效傳送點"] = self.get_transportation_name_by_id(
+                transportation_id.split("_")[0])
+
+            # 最險峻路徑長度(跑得到終點的最遠長度) and 起點 and 無法逃生座標點列表
+            start_to_end_point = dict()  # key: start_point_id, value:(endpointid, distance)
+            dead_point_ids = list()
+            # sol_table_dict -> instance -> startpoint -> endpoint
+            untraversed_start_point_ids = list(
+                self.sol_table_dict[(preventzone_id, transportation_id)].keys())
+            while len(untraversed_start_point_ids) != 0:
+                # 最低樓層(ex.'_99.45')
+                current_start_id = untraversed_start_point_ids[0]
+                nearest_end_point_id = min(self.sol_table_dict[(preventzone_id, transportation_id)][current_start_id], key=self.sol_table_dict[(
+                    preventzone_id, transportation_id)][current_start_id].get)
+                nearest_distance = self.sol_table_dict[(
+                    preventzone_id, transportation_id)][current_start_id][nearest_end_point_id]
+                if nearest_distance != np.inf:  # way to live
+                    start_to_end_point[current_start_id] = (
+                        nearest_end_point_id, nearest_distance)
+                else:  # dead point
+                    dead_point_ids.append(current_start_id)
+                untraversed_start_point_ids.remove(current_start_id)
+            try:
+                most_dangerous_start_point_id = max(
+                    start_to_end_point, key=lambda start_point: start_to_end_point[start_point][1])
+                new_row["最險峻路徑長度"] = start_to_end_point[most_dangerous_start_point_id][1] * self.__density
+                new_row["起點"] = most_dangerous_start_point_id
+                new_row["無法逃生座標點列表"] = dead_point_ids
+
+                # 起點位於防煙區劃
+                new_row["起點位於防煙區劃"] = self.get_preventzone_name_by_id(self.which_preventzone(
+                    most_dangerous_start_point_id))
+
+                # 終點
+                most_dangerous_end_point_id = start_to_end_point[most_dangerous_start_point_id][0]
+                new_row["終點"] = self.get_transportation_name_by_id(
+                    most_dangerous_end_point_id.split("_")[0])
+
+                # 終點編號
+                new_row["終點編號"] = most_dangerous_end_point_id
+
+                # 路徑經過防煙區劃 and instance_str
+                if preventzone_id == 'none' and transportation_id == 'none':
+                    instance_str = "none"
+                # read instance_str with "in"
+                elif self.which_preventzone(most_dangerous_start_point_id) == preventzone_id:
+                    instance_str = "in{}".format(
+                        self.__id_join(preventzone_id, transportation_id))
+                else:  # read instance_str without "in"
+                    instance_str = self.__id_join(
+                        preventzone_id, transportation_id)
+                # print(instance_str, most_dangerous_end_point_id)
+                dijk_parent_dict = self.solutions[instance_str].shortest_paths[
+                    most_dangerous_end_point_id][0]
+                new_row["instance_str"] = instance_str
+
+                # if new_row["最險峻路徑長度"] != np.inf:
+                path_ = [most_dangerous_start_point_id]
+                # print(most_dangerous_start_point_id)
+                while path_[-1] != most_dangerous_end_point_id:
+                    path_.append(dijk_parent_dict[path_[-1]])
+
+                path_preventzone_list = [self.which_preventzone(path_[0])]
+                for point in path_:
+                    point_lies_in = self.which_preventzone(point)
+                    if path_preventzone_list[-1] != point_lies_in:
+                        path_preventzone_list.append(point_lies_in)
+
+                path_preventzone_name_list = [self.get_preventzone_name_by_id(
+                    p_id) for p_id in path_preventzone_list]
+
+                new_row["路徑經過防煙區劃"] = path_preventzone_name_list
+
+                sol_table = sol_table.append(
+                    new_row, ignore_index=True)
+            except:
+                error = 'error'
+            
+        # 將數據框轉換為XlsxWriter Excel對象
+        sol_table.to_excel(writer, sheetName)
+        writer.save()
 
     def which_preventzone(self, vertex_id):
         """給定 vertex_id 並回傳其所在防煙區劃之 id。
