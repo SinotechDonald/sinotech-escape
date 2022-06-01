@@ -39,4 +39,5 @@ rich==10.7.0
 six==1.16.0
 soupsieve==2.2.1
 toml==0.10.2
+XlsxWriter==3.0.3
 pyinstaller==4.4

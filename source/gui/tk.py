@@ -19,6 +19,8 @@ from gui.stage_two import get_prevent_zone_id
 class TkApp:
 
     def __init__(self, base_path, log_dir, cache_dir) -> None:
+            
+        self.start_Output_cache = '' # 預設起始Output cache路徑
 
         self.base_path = base_path  # repo/app path
         self.log_dir = log_dir  # ~/.sinopath/.log
@@ -39,7 +41,7 @@ class TkApp:
         self.output_dir = None
 
         self.root = Tk()
-        self.root.title("SinoPath")
+        self.root.title("SinoPath_1.1.0")
         # self.root.geometry("720x480")
 
         # 置中
@@ -57,6 +59,8 @@ class TkApp:
         self.xml_label.config(font=("Courier", 8))
         # self.xml_label['text'] = "D:/逃生路徑/_LG10/gbXML/LG10_Extended.xml"
         # self.xml_path = "D:/逃生路徑/_LG10/gbXML/LG10_Extended.xml"
+        # self.xml_label['text'] = "D:/逃生路徑/_G22/gbXML/G22_Extended_gbXML_20220524.xml"
+        # self.xml_path = "D:/逃生路徑/_G22/gbXML/G22_Extended_gbXML_20220524.xml"
         self.xml_label.pack()
 
         buttonCommit1 = Button(
@@ -97,6 +101,8 @@ class TkApp:
         output_cache_label.config(font=("Courier", 8))
         # output_cache_label['text'] = "D:/逃生路徑/_LG10/Output cache"
         # self.output_cache_dir = "D:/逃生路徑/_LG10/Output cache"
+        # output_cache_label['text'] = "D:/逃生路徑/_G22/Output cache"
+        # self.output_cache_dir = "D:/逃生路徑/_G22/Output cache"
         output_cache_label.pack()
 
         buttonCommit2 = Button(
@@ -116,6 +122,8 @@ class TkApp:
         output_label.config(font=("Courier", 8))
         # output_label['text'] = "D:/逃生路徑/_LG10/Output directory"
         # self.output_dir = "D:/逃生路徑/_LG10/Output directory"
+        # output_label['text'] = "D:/逃生路徑/_G22/Output directory"
+        # self.output_dir = "D:/逃生路徑/_G22/Output directory"
         output_label.pack()
 
         buttonCommit2 = Button(
@@ -355,30 +363,33 @@ class TkApp:
         # 選擇要運行情境的cache資料夾
         root = Tk()
         root.withdraw()
-        self.output_cache_dir = filedialog.askdirectory(parent=root)
+        # 如果未更換過Output cache dir, 則不重新讀取cache, 可直接輸出svg圖
+        if self.output_cache_dir is not self.start_Output_cache:
+            self.start_Output_cache = self.output_cache_dir
+        # self.output_cache_dir = filedialog.askdirectory(parent=root) 選擇要運算的Output cache資料夾
         
-        self.building = Building(
-            density=(0.2 ** 0.5),
-            use_cache=True,
-            cache_dir=self.output_cache_dir,
-            output_dir=self.output_dir
-        )
-        self.building.load_infos(
-            contours_path=self.xml_path,
-            msgBox='no'
-        )
-        
-        self.building.to_grid_graph()
-
-        self.building.connect_floors()
-        self.building.instances_analysis()
-        self.building.calculate_reverse_table()
-
-        while not self.__check_output_dir_existence_and_premission(self.output_dir):
-            self.output_dir = filedialog.askdirectory(
-                title="輸出資料夾不存在或權限錯誤，請重新選擇"
+            self.building = Building(
+                density=(0.2 ** 0.5),
+                use_cache=True,
+                cache_dir=self.output_cache_dir,
+                output_dir=self.output_dir
             )
-            self.building.update_output_dir(self.output_dir)
+            self.building.load_infos(
+                contours_path=self.xml_path,
+                msgBox='no'
+            )
+            
+            self.building.to_grid_graph()
+
+            self.building.connect_floors()
+            self.building.instances_analysis()
+            self.building.calculate_reverse_table()
+
+            while not self.__check_output_dir_existence_and_premission(self.output_dir):
+                self.output_dir = filedialog.askdirectory(
+                    title="輸出資料夾不存在或權限錯誤，請重新選擇"
+                )
+                self.building.update_output_dir(self.output_dir)
         if type == 0:
             # # key: preventzone name, value: preventzone id
             # prevent_zone_dict = {self.building.get_preventzone_name_by_id(

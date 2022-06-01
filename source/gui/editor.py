@@ -29,16 +29,27 @@ class Editor:
         self.__start_x, self.__start_y = None, None
         self.__scattered = None
         self.__added_lines = dict()
-        if not ttc_path:
-            if os.path.exists(os.path.join("util", "DFLiHei-Bd.ttc")):
-                self.__font = FontProperties(fname=os.path.join("util", "DFLiHei-Bd.ttc"), size=1)
-            else:
-                try:
-                    self.__font = FontProperties(fname=os.path.join(sys._MEIPASS, "ttc", "DFLiHei-Bd.ttc"), size=1)
-                except:
-                    self.__font = FontProperties(fname=r"C:/Prj/Python/sinotech-escape/tools/DFLiHei-Bd.ttc",size=1)
+
+        # 字型(Windows內建字體)
+        if os.path.exists(os.path.join("util", "msjh.ttc")):
+            self.font = FontProperties(fname=os.path.join("util", "msjh.ttc"), size=4)
         else:
-            self.__font = FontProperties(fname=ttc_path)
+            try:
+                self.font = FontProperties(fname=os.path.join(sys._MEIPASS, "ttc", "msjh.ttc"), size=4)
+            except:
+                self.font = FontProperties(fname=r"c:\windows\fonts\msjh.ttc", size=4)
+
+        # if not ttc_path:
+        #     if os.path.exists(os.path.join("util", "DFLiHei-Bd.ttc")):
+        #         self.__font = FontProperties(fname=os.path.join("util", "DFLiHei-Bd.ttc"), size=1)
+        #     else:
+        #         try:
+        #             self.__font = FontProperties(fname=os.path.join(sys._MEIPASS, "ttc", "DFLiHei-Bd.ttc"), size=1)
+        #         except:
+        #             self.__font = FontProperties(fname=r"C:/Prj/Python/sinotech-escape/tools/DFLiHei-Bd.ttc",size=1)
+        # else:
+        #     self.__font = FontProperties(fname=ttc_path)
+            
         self.__press_time = None
         self.history_stack = History()
         self.future_stack = History()

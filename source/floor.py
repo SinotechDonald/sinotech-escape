@@ -141,14 +141,23 @@ class Floor:
         """
 
         logging.info("開始繪製平面圖 ...")
-
-        if os.path.exists(os.path.join("util", "DFLiHei-Bd.ttc")):
-            font = FontProperties(fname=os.path.join("util", "DFLiHei-Bd.ttc"), size=1)
+        # 字型(Windows內建字體)
+        if os.path.exists(os.path.join("util", "msjh.ttc")):
+            font = FontProperties(fname=os.path.join("util", "msjh.ttc"), size=4)
         else:
             try:
-                font = FontProperties(fname=os.path.join(sys._MEIPASS, "ttc", "DFLiHei-Bd.ttc"), size=1)
+                font = FontProperties(fname=os.path.join(sys._MEIPASS, "ttc", "msjh.ttc"), size=4)
             except:
-                font = FontProperties(fname=r"C:/Prj/Python/sinotech-escape/tools/DFLiHei-Bd.ttc",size=1)
+                font = FontProperties(fname=r"c:\windows\fonts\msjh.ttc", size=4)
+
+        # 以下字體非商用
+        # if os.path.exists(os.path.join("util", "DFLiHei-Bd.ttc")):
+        #     font = FontProperties(fname=os.path.join("util", "DFLiHei-Bd.ttc"), size=1)
+        # else:
+        #     try:
+        #         font = FontProperties(fname=os.path.join(sys._MEIPASS, "ttc", "DFLiHei-Bd.ttc"), size=1)
+        #     except:
+        #         font = FontProperties(fname=r"C:/Prj/Python/sinotech-escape/tools/DFLiHei-Bd.ttc",size=1)
         
         if self.__contour != None:
             logging.debug("plot contour")
