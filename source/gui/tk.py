@@ -41,7 +41,7 @@ class TkApp:
         self.output_dir = None
 
         self.root = Tk()
-        self.root.title("SinoPath_1.1.0")
+        self.root.title("SinoPath_1.2.0")
         # self.root.geometry("720x480")
 
         # 置中
@@ -57,8 +57,8 @@ class TkApp:
 
         self.xml_label = Label(self.root, text=self.xml_path)
         self.xml_label.config(font=("Courier", 8))
-        # self.xml_label['text'] = "D:/逃生路徑/_LG10/gbXML/LG10_Extended.xml"
-        # self.xml_path = "D:/逃生路徑/_LG10/gbXML/LG10_Extended.xml"
+        # self.xml_label['text'] = "D:/逃生路徑/_LG10/gbXML/LG10_Extended_gbXML_20211102.xml"
+        # self.xml_path = "D:/逃生路徑/_LG10/gbXML/LG10_Extended_gbXML_20211102.xml"
         # self.xml_label['text'] = "D:/逃生路徑/_G22/gbXML/G22_Extended_gbXML_20220524.xml"
         # self.xml_path = "D:/逃生路徑/_G22/gbXML/G22_Extended_gbXML_20220524.xml"
         self.xml_label.pack()
@@ -230,7 +230,30 @@ class TkApp:
         elif type == 2:
             self.output_cache_dir = target_label["text"]
 
-    def __handleRun(self):
+    def __default_set(self, output_cache_dir):
+        self.building = Building(
+                density=(0.2 ** 0.5),
+                use_cache=True,
+                cache_dir=output_cache_dir,
+                output_dir=self.output_dir
+            )
+        self.building.load_infos(
+            contours_path=self.xml_path,
+            msgBox='no'
+        )
+        
+        self.building.to_grid_graph()
+        self.building.connect_floors()
+        self.building.instances_analysis()
+        self.building.calculate_reverse_table()
+
+        while not self.__check_output_dir_existence_and_premission(self.output_dir):
+            self.output_dir = filedialog.askdirectory(
+                title="輸出資料夾不存在或權限錯誤，請重新選擇"
+            )
+            self.building.update_output_dir(self.output_dir)
+
+    def __handleRun(self): # 分析運算
 
         if (not self.xml_path or ".xml" not in self.xml_path) \
                 or not self.output_dir:
@@ -242,6 +265,8 @@ class TkApp:
 
         # 修改內容, 把樓梯都更換為電扶梯
         msgBox = messagebox.askquestion("SinoPath", "是否將樓梯加入失效情境運算?")
+
+        self.start_Output_cache = self.output_cache_dir # 起始母資料夾
 
         self.building = Building(
             density=(0.2 ** 0.5),
@@ -304,6 +329,10 @@ class TkApp:
             # self.building.dump_sol_table()
             self.building.export_to_excel(writerPath, sheetName)
 
+        # 分析完成後, 預設回母資料夾的cache
+        self.output_cache_dir = self.start_Output_cache
+        self.__default_set(self.output_cache_dir)
+
         end_time = time.perf_counter()
         spendTime = time.strftime("%H:%M:%S", time.gmtime(end_time - start_time))
         logging.info("執行結束！共花費 " + spendTime + " 秒。")
@@ -358,7 +387,7 @@ class TkApp:
             ))
             return False
 
-    def __handlePlot(self, type: int):
+    def __handlePlot(self, type: int): # 路徑輸出
         
         # 選擇要運行情境的cache資料夾
         root = Tk()
@@ -368,28 +397,28 @@ class TkApp:
             self.start_Output_cache = self.output_cache_dir
         # self.output_cache_dir = filedialog.askdirectory(parent=root) 選擇要運算的Output cache資料夾
         
-            self.building = Building(
-                density=(0.2 ** 0.5),
-                use_cache=True,
-                cache_dir=self.output_cache_dir,
-                output_dir=self.output_dir
-            )
-            self.building.load_infos(
-                contours_path=self.xml_path,
-                msgBox='no'
-            )
+            self.__default_set(self.output_cache_dir)
+            # self.building = Building(
+            #     density=(0.2 ** 0.5),
+            #     use_cache=True,
+            #     cache_dir=self.output_cache_dir,
+            #     output_dir=self.output_dir
+            # )
+            # self.building.load_infos(
+            #     contours_path=self.xml_path,
+            #     msgBox='no'
+            # )
             
-            self.building.to_grid_graph()
+            # self.building.to_grid_graph()
+            # self.building.connect_floors()
+            # self.building.instances_analysis()
+            # self.building.calculate_reverse_table()
 
-            self.building.connect_floors()
-            self.building.instances_analysis()
-            self.building.calculate_reverse_table()
-
-            while not self.__check_output_dir_existence_and_premission(self.output_dir):
-                self.output_dir = filedialog.askdirectory(
-                    title="輸出資料夾不存在或權限錯誤，請重新選擇"
-                )
-                self.building.update_output_dir(self.output_dir)
+            # while not self.__check_output_dir_existence_and_premission(self.output_dir):
+            #     self.output_dir = filedialog.askdirectory(
+            #         title="輸出資料夾不存在或權限錯誤，請重新選擇"
+            #     )
+            #     self.building.update_output_dir(self.output_dir)
         if type == 0:
             # # key: preventzone name, value: preventzone id
             # prevent_zone_dict = {self.building.get_preventzone_name_by_id(

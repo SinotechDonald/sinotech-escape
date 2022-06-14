@@ -12,11 +12,9 @@ from tkinter import messagebox
 from gui.tk import TkApp
 from util.app_utils import send_bug_report, verify_updates
 
-
 # lang = gettext.translation('base', localedir='locales', languages=["{}".format(locale.getdefaultlocale()[0])])
 # lang.install()
 # _ = lang.gettext
-
 
 def main():
 

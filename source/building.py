@@ -1065,8 +1065,9 @@ class Building:
             instance_str (str): 情境描述字串，格式為{失效防煙區劃id}_{失效傳送點_id}
 
         """
-
-        plots_dir = os.path.join(self.__output_dir, "plots")
+        
+        output_cache_dir = self.__cache_dir.split('/')[-1]
+        plots_dir = os.path.join(self.__output_dir, "plots", output_cache_dir)
         os.makedirs(plots_dir, exist_ok=True)
 
         prevent_zone_id = instance_str.split("_")[0]

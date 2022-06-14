@@ -143,12 +143,12 @@ class Floor:
         logging.info("開始繪製平面圖 ...")
         # 字型(Windows內建字體)
         if os.path.exists(os.path.join("util", "msjh.ttc")):
-            font = FontProperties(fname=os.path.join("util", "msjh.ttc"), size=4)
+            font = FontProperties(fname=os.path.join("util", "msjh.ttc"), size=2)
         else:
             try:
-                font = FontProperties(fname=os.path.join(sys._MEIPASS, "ttc", "msjh.ttc"), size=4)
+                font = FontProperties(fname=os.path.join(sys._MEIPASS, "ttc", "msjh.ttc"), size=2)
             except:
-                font = FontProperties(fname=r"c:\windows\fonts\msjh.ttc", size=4)
+                font = FontProperties(fname=r"c:\windows\fonts\msjh.ttc", size=2)
 
         # 以下字體非商用
         # if os.path.exists(os.path.join("util", "DFLiHei-Bd.ttc")):
@@ -186,8 +186,8 @@ class Floor:
                 trans_x.append(transportation.get_coordinate()[0])
                 trans_y.append(transportation.get_coordinate()[1])
             ax.scatter(trans_x, trans_y, s=3, marker='X', c='r', alpha=0.8)
-            for x, y in zip(trans_x, trans_y):
-                ax.annotate("傳送點", (x, y), fontproperties=font, c="r")
+            # for x, y in zip(trans_x, trans_y):
+            #     ax.annotate("傳送點", (x, y), fontproperties=font, c="r")
 
         logging.debug("plot vertex")
 

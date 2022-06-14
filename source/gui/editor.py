@@ -29,15 +29,14 @@ class Editor:
         self.__start_x, self.__start_y = None, None
         self.__scattered = None
         self.__added_lines = dict()
-
-        # 字型(Windows內建字體)
-        if os.path.exists(os.path.join("util", "msjh.ttc")):
-            self.font = FontProperties(fname=os.path.join("util", "msjh.ttc"), size=4)
+        
+        if os.path.exists(os.path.join("util", "msjh.ttc")): # 字型(Windows內建字體)
+            self.font = FontProperties(fname=os.path.join("util", "msjh.ttc"), size=2)
         else:
             try:
-                self.font = FontProperties(fname=os.path.join(sys._MEIPASS, "ttc", "msjh.ttc"), size=4)
+                self.font = FontProperties(fname=os.path.join(sys._MEIPASS, "ttc", "msjh.ttc"), size=2)
             except:
-                self.font = FontProperties(fname=r"c:\windows\fonts\msjh.ttc", size=4)
+                self.font = FontProperties(fname=r"c:\windows\fonts\msjh.ttc", size=2)
 
         # if not ttc_path:
         #     if os.path.exists(os.path.join("util", "DFLiHei-Bd.ttc")):
