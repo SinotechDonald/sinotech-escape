@@ -358,13 +358,13 @@ class Floor:
                     pass
 
     def __define_border(self):
-        """將界線以座標標出。
+        """將界線以座標標出。min、max +-5 是硬性調整畫布的大小, 減少發生"transportation 的值超出邊界"的可能性
         """
         self.__border = {
-            "x_min": min([_.get_start_point()[0] for _ in self.__equation_layer]),
-            "x_max": max([_.get_start_point()[0] for _ in self.__equation_layer]),
-            "y_min": min([_.get_start_point()[1] for _ in self.__equation_layer]),
-            "y_max": max([_.get_start_point()[1] for _ in self.__equation_layer])
+            "x_min": min([_.get_start_point()[0] for _ in self.__equation_layer])-5,
+            "x_max": max([_.get_start_point()[0] for _ in self.__equation_layer])+5,
+            "y_min": min([_.get_start_point()[1] for _ in self.__equation_layer])-5,
+            "y_max": max([_.get_start_point()[1] for _ in self.__equation_layer])+5
         }
 
     def __define_axis(self):

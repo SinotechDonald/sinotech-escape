@@ -41,7 +41,7 @@ class TkApp:
         self.output_dir = None
 
         self.root = Tk()
-        self.root.title("SinoPath_1.2.0")
+        self.root.title("SinoPath_1.3.0")
         # self.root.geometry("720x480")
 
         # 置中
