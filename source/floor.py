@@ -358,13 +358,38 @@ class Floor:
                     pass
 
     def __define_border(self):
-        """將界線以座標標出。min、max +-5 是硬性調整畫布的大小, 減少發生"transportation 的值超出邊界"的可能性
+
+        """(改寫)查詢transportation的最大最小xy值"""
+        ""
+        min_x = min(self.__transportations, key=lambda s: s.get_coordinate()[0]).get_coordinate()[0]-1
+        max_x = max(self.__transportations, key=lambda s: s.get_coordinate()[0]).get_coordinate()[0]+1
+        min_y = min(self.__transportations, key=lambda s: s.get_coordinate()[1]).get_coordinate()[1]-1
+        max_y = max(self.__transportations, key=lambda s: s.get_coordinate()[1]).get_coordinate()[1]+1
+
+        """(改寫)傳送點座標與equation_layer比較xy最大最小值"""
+        ""
+
+        if min([_.get_start_point()[0] for _ in self.__equation_layer]) < min_x:
+            min_x = min([_.get_start_point()[0] for _ in self.__equation_layer])
+        if max([_.get_start_point()[0] for _ in self.__equation_layer]) > max_x:
+            max_x = max([_.get_start_point()[0] for _ in self.__equation_layer])
+        if min([_.get_start_point()[1] for _ in self.__equation_layer]) < min_y:
+            min_y = min([_.get_start_point()[1] for _ in self.__equation_layer])
+        if max([_.get_start_point()[1] for _ in self.__equation_layer]) > max_y:
+            max_y = max([_.get_start_point()[1] for _ in self.__equation_layer])
+
+        """(改寫)將界線以座標標出。障礙物與傳送點都要比對最大最小xy值, 減少發生"transportation 的值超出邊界"的可能性
         """
         self.__border = {
-            "x_min": min([_.get_start_point()[0] for _ in self.__equation_layer])-5,
-            "x_max": max([_.get_start_point()[0] for _ in self.__equation_layer])+5,
-            "y_min": min([_.get_start_point()[1] for _ in self.__equation_layer])-5,
-            "y_max": max([_.get_start_point()[1] for _ in self.__equation_layer])+5
+            "x_min": min_x,
+            "x_max": max_x,
+            "y_min": min_y,
+            "y_max": max_y
+            # 原台大寫法
+            # "x_min": min([_.get_start_point()[0] for _ in self.__equation_layer]),
+            # "x_max": max([_.get_start_point()[0] for _ in self.__equation_layer]),
+            # "y_min": min([_.get_start_point()[1] for _ in self.__equation_layer]),
+            # "y_max": max([_.get_start_point()[1] for _ in self.__equation_layer])
         }
 
     def __define_axis(self):
