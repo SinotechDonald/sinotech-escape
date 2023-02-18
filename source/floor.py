@@ -277,6 +277,8 @@ class Floor:
         #顯示路徑長度：步行點數 * 0.2開根號
         path_points = len(self.path_tmp)
         path_length = round((path_points - 1) * 0.2 ** 0.5, 4)
+        if path_length < 0:
+            path_length = 0
         # s = 'Points: {points}, Distance: {length}'.format(points=path_points, length=test)
         s = "Points: %.0f"%path_points + ", Distance: %.4f"%path_length
         ax.set_xlabel(s, family='serif', color='r', size=12)

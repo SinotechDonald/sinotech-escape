@@ -40,7 +40,8 @@ class Dijkstra:
         self.__parent_template[source_id] = source_id
         h = []  # from document, do NOT modify
         heapq.heappush(h, DijkNode(source_id, 0))
-
+        
+        save_sentpoint = [] # 傳送點只記錄一次
         cc_length = len(connected_component_id)
         for _ in range(cc_length):
 
@@ -58,7 +59,14 @@ class Dijkstra:
 
             for node_id in grid_graph[id_]:
                 if self.__visited_template[node_id] == False and self.__distance_template[id_] + 1 < self.__distance_template[node_id]:
-                    self.__distance_template[node_id] = self.__distance_template[id_] + 1
+                    if len(node_id.split('_')) == 2:
+                        if not node_id.split('_')[0] in save_sentpoint:
+                            self.__distance_template[node_id] = self.__distance_template[id_] + 1
+                            save_sentpoint.append(node_id.split('_')[0])
+                        else:
+                            self.__distance_template[node_id] = self.__distance_template[id_]
+                    else:
+                        self.__distance_template[node_id] = self.__distance_template[id_] + 1
                     self.__parent_template[node_id] = id_
                     heapq.heappush(h, DijkNode(
                         node_id, self.__distance_template[node_id]))

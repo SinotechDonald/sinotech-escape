@@ -83,6 +83,8 @@ class Building:
         self.algo_res = list()
         self.lower_bounds = list()
 
+        self.connect_transpoint_counts = 0
+
     def __rotate(self, origin, point, angle, z):
         """
         Rotate a point counterclockwise by a given angle around a given origin.
@@ -421,13 +423,14 @@ class Building:
                         logging.debug("連接傳送點 {}".format(vertex_id))
                         elevation_gap = abs(floor.get_elevation(
                         ) - transportation_dict[vertex_id][1])  # 新減舊
+                        # vertical_moving_speed = 1 / 0.4 / 0.25 # 修改垂直距離佈點
                         vertical_moving_speed = 1 # 修改垂直距離佈點
                         parallel_moving_speed = 1
                         # 模擬垂直距離佈點數
                         append_num = np.ceil(elevation_gap / self.__density / (
                             vertical_moving_speed / parallel_moving_speed)).astype(int)  # ceiling
-                        # # 連結佈點只留起終點, 盡量減低垂直距離計算
-                        # append_num = 2
+                        # 連結佈點只留起終點, 盡量減低垂直距離計算
+                        append_num = 2
                         for cnt in range(append_num):
                             if cnt == 0:  # 頭
                                 self.__total_graph.add_vertex(Vertex(vertex_obj.get_coordinate()[0], vertex_obj.get_coordinate()[1], floor.get_elevation(
@@ -543,58 +546,58 @@ class Building:
             logging.info(
                 "案例--失火區域：{}，維護中傳送點{} 計算完成".format(failed_block, failed_vertex_id))
 
-            for floor in self.__floors:
-                transportation_ids = [self.__id_join(trans.get_id(), str(floor.get_elevation()))
-                                      for trans in floor.get_transportations()]
-                for prevent_zone_id in floor.vertex_prevent_dict:
-                    calculated_transportation = list()
-                    for floor_ in self.__floors:
-                        for transportation in floor_.get_transportations():
+            # for floor in self.__floors:
+            #     transportation_ids = [self.__id_join(trans.get_id(), str(floor.get_elevation()))
+            #                           for trans in floor.get_transportations()]
+            #     for prevent_zone_id in floor.vertex_prevent_dict:
+            #         calculated_transportation = list()
+            #         for floor_ in self.__floors:
+            #             for transportation in floor_.get_transportations():
 
-                            failed_vertex_ids = list()
-                            # 會進行維護的傳送點
-                            calculated = (transportation.get_id()
-                                          in calculated_transportation)
-                            if (transportation.is_end_point() or transportation.always_valid()) or calculated:
-                                continue
-                            calculated_transportation.append(
-                                transportation.get_id())
-                            failed_vertex_ids.append(
-                                self.__id_join(transportation.get_id(), str(floor_.get_elevation())))  # 維護中傳送點
-                            failed_block = floor.vertex_prevent_dict[prevent_zone_id]
-                            for vertex_id in failed_block:
-                                # 因為在失效防煙區劃而失效的傳送點
-                                if vertex_id in transportation_ids and (not vertex_id in failed_vertex_ids):
-                                    failed_vertex_ids.append(vertex_id)
-                            logging.info(
-                                "開始計算案例--失火區域：{}，失效傳送點{}".format(prevent_zone_id, failed_vertex_ids))
-                            failed_transportation_ids = ",".join(
-                                failed_vertex_ids)
-                            self.__generate_solution(
-                                dijkstra, failed_transportation_ids, prevent_zone_id, failed_vertex_ids, 1, transportation.get_id(), str(floor_.get_elevation()))
+            #                 failed_vertex_ids = list()
+            #                 # 會進行維護的傳送點
+            #                 calculated = (transportation.get_id()
+            #                               in calculated_transportation)
+            #                 if (transportation.is_end_point() or transportation.always_valid()) or calculated:
+            #                     continue
+            #                 calculated_transportation.append(
+            #                     transportation.get_id())
+            #                 failed_vertex_ids.append(
+            #                     self.__id_join(transportation.get_id(), str(floor_.get_elevation())))  # 維護中傳送點
+            #                 failed_block = floor.vertex_prevent_dict[prevent_zone_id]
+            #                 for vertex_id in failed_block:
+            #                     # 因為在失效防煙區劃而失效的傳送點
+            #                     if vertex_id in transportation_ids and (not vertex_id in failed_vertex_ids):
+            #                         failed_vertex_ids.append(vertex_id)
+            #                 logging.info(
+            #                     "開始計算案例--失火區域：{}，失效傳送點{}".format(prevent_zone_id, failed_vertex_ids))
+            #                 failed_transportation_ids = ",".join(
+            #                     failed_vertex_ids)
+            #                 self.__generate_solution(
+            #                     dijkstra, failed_transportation_ids, prevent_zone_id, failed_vertex_ids, 1, transportation.get_id(), str(floor_.get_elevation()))
 
-            for floor in self.__floors:
-                for prevent_zone_id in floor.vertex_prevent_dict:
-                    calculated_transportation = list()
-                    failed_block = floor.vertex_prevent_dict[prevent_zone_id]
-                    for floor_ in self.__floors:
-                        for transportation in floor_.get_transportations():
+            # for floor in self.__floors:
+            #     for prevent_zone_id in floor.vertex_prevent_dict:
+            #         calculated_transportation = list()
+            #         failed_block = floor.vertex_prevent_dict[prevent_zone_id]
+            #         for floor_ in self.__floors:
+            #             for transportation in floor_.get_transportations():
 
-                            if transportation.is_end_point() or transportation.always_valid():
-                                continue
-                            if not transportation.get_id() in calculated_transportation:
+            #                 if transportation.is_end_point() or transportation.always_valid():
+            #                     continue
+            #                 if not transportation.get_id() in calculated_transportation:
 
-                                calculated_transportation.append(
-                                    transportation.get_id())
-                                failed_vertex_id = self.__id_join(
-                                    transportation.get_id(), floor_.get_elevation())
+            #                     calculated_transportation.append(
+            #                         transportation.get_id())
+            #                     failed_vertex_id = self.__id_join(
+            #                         transportation.get_id(), floor_.get_elevation())
 
-                                logging.info(
-                                    "開始計算案例--失火區域：{}，維護中傳送點{}".format(prevent_zone_id, failed_vertex_id))
-                                self.__generate_solution(
-                                    dijkstra, failed_vertex_id, prevent_zone_id, failed_block, 2)
-                                logging.info(
-                                    "案例--失火區域：{}，維護中傳送點{} 計算完成".format(prevent_zone_id, failed_vertex_id))
+            #                     logging.info(
+            #                         "開始計算案例--失火區域：{}，維護中傳送點{}".format(prevent_zone_id, failed_vertex_id))
+            #                     self.__generate_solution(
+            #                         dijkstra, failed_vertex_id, prevent_zone_id, failed_block, 2)
+            #                     logging.info(
+            #                         "案例--失火區域：{}，維護中傳送點{} 計算完成".format(prevent_zone_id, failed_vertex_id))
 
             logging.info("共分析了 {} 條路徑".format(self.path_counter))
 
@@ -908,8 +911,10 @@ class Building:
 
         logging.info("正在輸出最險峻路徑表格")
 
+        # sol_table = pd.DataFrame(
+        #     columns=["instance_str", "起點", "失效防煙區劃", "失效傳送點", "最險峻路徑長度", "起點位於防煙區劃", "終點", "終點編號", "路徑經過防煙區劃", "無法逃生座標點列表"])
         sol_table = pd.DataFrame(
-            columns=["instance_str", "起點", "失效防煙區劃", "失效傳送點", "最險峻路徑長度", "起點位於防煙區劃", "終點", "終點編號", "路徑經過防煙區劃", "無法逃生座標點列表"])
+            columns=["instance_str", "起點", "失效防煙區劃", "失效傳送點", "最險峻路徑水平距離", "最險峻路徑垂直距離", "最險峻路徑時間", "起點位於防煙區劃", "終點", "終點編號", "路徑經過防煙區劃", "無法逃生座標點列表"])
         for preventzone_id, transportation_id in self.sol_table_dict:  # for each instance
             new_row = dict()
 
@@ -938,9 +943,30 @@ class Building:
                     dead_point_ids.append(current_start_id)
                 untraversed_start_point_ids.remove(current_start_id)
             try:
+                # 加上起終點的高度
+                worstCase = dict()
+                for startPointId in start_to_end_point:
+                    startElev = startPointId.split("_")[len(startPointId.split("_")) - 1]
+                    endElev = start_to_end_point[startPointId][0].split("_")[len(start_to_end_point[startPointId][0].split("_")) - 1]
+                    gap = float(endElev) - float(startElev)
+                    speed = 0.0
+                    distance = 0.0
+                    if len(startPointId.split("_")) > 2:
+                        speed = (float(start_to_end_point[startPointId][1])) * self.__density + gap / 0.25 # 垂直距離速率, 用時間排序
+                        distance = (float(start_to_end_point[startPointId][1])) * self.__density + gap
+                    worstCase[startPointId] = (start_to_end_point[startPointId][0], start_to_end_point[startPointId][1], gap, speed, distance)
+
                 most_dangerous_start_point_id = max(
-                    start_to_end_point, key=lambda start_point: start_to_end_point[start_point][1])
-                new_row["最險峻路徑長度"] = start_to_end_point[most_dangerous_start_point_id][1] * self.__density
+                    worstCase, key=lambda start_point: worstCase[start_point][3])
+                # # 加上起點與終點的高程差
+                # new_row["最險峻路徑長度"] = worstCase[most_dangerous_start_point_id][1] * self.__density + worstCase[most_dangerous_start_point_id][2]
+                new_row["最險峻路徑水平距離"] = ((worstCase[most_dangerous_start_point_id][1])) * self.__density # 扣除起終點數量2
+                new_row["最險峻路徑垂直距離"] = worstCase[most_dangerous_start_point_id][2]
+                new_row["最險峻路徑時間"] = worstCase[most_dangerous_start_point_id][3]
+
+                # most_dangerous_start_point_id = max(
+                #     start_to_end_point, key=lambda start_point: start_to_end_point[start_point][1])
+                # new_row["最險峻路徑長度"] = start_to_end_point[most_dangerous_start_point_id][1] * self.__density
                 new_row["起點"] = most_dangerous_start_point_id
                 new_row["無法逃生座標點列表"] = dead_point_ids
 
