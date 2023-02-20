@@ -914,13 +914,13 @@ class Building:
         # sol_table = pd.DataFrame(
         #     columns=["instance_str", "起點", "失效防煙區劃", "失效傳送點", "最險峻路徑長度", "起點位於防煙區劃", "終點", "終點編號", "路徑經過防煙區劃", "無法逃生座標點列表"])
         sol_table = pd.DataFrame(
-            columns=["instance_str", "起點", "失效防煙區劃", "失效傳送點", "最險峻路徑水平距離", "最險峻路徑垂直距離", "最險峻路徑時間", "起點位於防煙區劃", "終點", "終點編號", "路徑經過防煙區劃", "無法逃生座標點列表"])
+            columns=["逃生情境(火源防煙區劃_維修中垂直動線_高程)", "起點編號_高程", "火源防煙區劃", "維修中垂直動線", "水平路徑總和(公尺)", "垂直路徑總和(公尺)", "逃生時間(秒)", "起點防煙區劃", "終點", "終點編號_高程", "路徑經過防煙區劃", "無法逃生座標點列表"])
         for preventzone_id, transportation_id in self.sol_table_dict:  # for each instance
             new_row = dict()
 
             # 失效防煙區劃 and 失效傳送點
-            new_row["失效防煙區劃"] = self.get_preventzone_name_by_id(preventzone_id)
-            new_row["失效傳送點"] = self.get_transportation_name_by_id(
+            new_row["火源防煙區劃"] = self.get_preventzone_name_by_id(preventzone_id)
+            new_row["維修中垂直動線"] = self.get_transportation_name_by_id(
                 transportation_id.split("_")[0])
 
             # 最險峻路徑長度(跑得到終點的最遠長度) and 起點 and 無法逃生座標點列表
@@ -960,18 +960,18 @@ class Building:
                     worstCase, key=lambda start_point: worstCase[start_point][3])
                 # # 加上起點與終點的高程差
                 # new_row["最險峻路徑長度"] = worstCase[most_dangerous_start_point_id][1] * self.__density + worstCase[most_dangerous_start_point_id][2]
-                new_row["最險峻路徑水平距離"] = ((worstCase[most_dangerous_start_point_id][1])) * self.__density # 扣除起終點數量2
-                new_row["最險峻路徑垂直距離"] = worstCase[most_dangerous_start_point_id][2]
-                new_row["最險峻路徑時間"] = worstCase[most_dangerous_start_point_id][3]
+                new_row["水平路徑總和(公尺)"] = ((worstCase[most_dangerous_start_point_id][1])) * self.__density # 扣除起終點數量2
+                new_row["垂直路徑總和(公尺)"] = worstCase[most_dangerous_start_point_id][2]
+                new_row["逃生時間(秒)"] = worstCase[most_dangerous_start_point_id][3]
 
                 # most_dangerous_start_point_id = max(
                 #     start_to_end_point, key=lambda start_point: start_to_end_point[start_point][1])
                 # new_row["最險峻路徑長度"] = start_to_end_point[most_dangerous_start_point_id][1] * self.__density
-                new_row["起點"] = most_dangerous_start_point_id
+                new_row["起點編號_高程"] = most_dangerous_start_point_id
                 new_row["無法逃生座標點列表"] = dead_point_ids
 
                 # 起點位於防煙區劃
-                new_row["起點位於防煙區劃"] = self.get_preventzone_name_by_id(self.which_preventzone(
+                new_row["起點防煙區劃"] = self.get_preventzone_name_by_id(self.which_preventzone(
                     most_dangerous_start_point_id))
 
                 # 終點
@@ -980,7 +980,7 @@ class Building:
                     most_dangerous_end_point_id.split("_")[0])
 
                 # 終點編號
-                new_row["終點編號"] = most_dangerous_end_point_id
+                new_row["終點編號_高程"] = most_dangerous_end_point_id
 
                 # 路徑經過防煙區劃 and instance_str
                 if preventzone_id == 'none' and transportation_id == 'none':
@@ -995,7 +995,7 @@ class Building:
                 # print(instance_str, most_dangerous_end_point_id)
                 dijk_parent_dict = self.solutions[instance_str].shortest_paths[
                     most_dangerous_end_point_id][0]
-                new_row["instance_str"] = instance_str
+                new_row["逃生情境(火源防煙區劃_維修中垂直動線_高程)"] = instance_str
 
                 # if new_row["最險峻路徑長度"] != np.inf:
                 path_ = [most_dangerous_start_point_id]
@@ -1018,9 +1018,12 @@ class Building:
                     new_row, ignore_index=True)
             except:
                 error = 'error'
-            
+        
         # 將數據框轉換為XlsxWriter Excel對象
         sol_table.to_excel(writer, sheetName)
+        # 刪除Excel預設的Sheet1
+        if 'Sheet1' in book.sheetnames:
+            book.remove(book['Sheet1'])
         writer.save()
 
     def which_preventzone(self, vertex_id):
