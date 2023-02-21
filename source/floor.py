@@ -290,7 +290,7 @@ class Floor:
         logging.debug("plot edges")
 
         ax.floor_name = self.get_name() # 樓層名稱
-        ax.__elevation = self.__elevation() # 樓層高度
+        ax.elevation = self.get_elevation() # 樓層高度
         ax.path_length = path_length # 該樓層水平逃生距離
 
         ax.plot(xx, yy, linewidth=0.4, c='b')

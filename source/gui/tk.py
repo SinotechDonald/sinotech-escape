@@ -474,7 +474,7 @@ class TkApp:
 
             failed_endpoints = self.building.plot_sol(
                 "2",
-                start_point,
+                start_point.strip('\n'),
                 # "",
                 instance_str
             )
