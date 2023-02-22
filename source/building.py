@@ -1191,7 +1191,7 @@ class Building:
         #     error = 'error'
 
         # 直式
-        sol_table = pd.DataFrame(columns=["樓層", "距離"])
+        sol_table = pd.DataFrame(columns=["樓層", "路徑(m)"])
         rows = len(pathInfo) * 2 - 1
         row = 0
         i = 0
@@ -1202,25 +1202,25 @@ class Building:
                 if (row % 2) == 1:
                     # 如果底層有逃生路徑才加上垂直高度距離
                     if pathInfo[i-1][1][1] > 0:
-                        new_row["樓層"] = pathInfo[i-1][0] + '高度'
-                        new_row["距離"] = pathInfo[i][1][0] - pathInfo[i-1][1][0]
+                        new_row["樓層"] = pathInfo[i-1][0] + ' to ' + pathInfo[i][0]
+                        new_row["路徑(m)"] = pathInfo[i][1][0] - pathInfo[i-1][1][0]
                         sol_table = sol_table.append(new_row, ignore_index=True)
                         total+=pathInfo[i][1][0] - pathInfo[i-1][1][0]
                     else:
-                        new_row["樓層"] = pathInfo[i-1][0] + '高度'
-                        new_row["距離"] = 0
+                        new_row["樓層"] = pathInfo[i-1][0] + ' to ' + pathInfo[i][0]
+                        new_row["路徑(m)"] = 0
                         sol_table = sol_table.append(new_row, ignore_index=True)
                     row+=1
                 else:
                     new_row["樓層"] = pathInfo[i][0]
-                    new_row["距離"] = pathInfo[i][1][1]
+                    new_row["路徑(m)"] = pathInfo[i][1][1]
                     sol_table = sol_table.append(new_row, ignore_index=True)
                     total+=pathInfo[i][1][1]
                     i+=1
                     row+=1
 
             new_row["樓層"] = "合計"
-            new_row["距離"] = total
+            new_row["路徑(m)"] = total
             sol_table = sol_table.append(new_row, ignore_index=True)
 
         except:
