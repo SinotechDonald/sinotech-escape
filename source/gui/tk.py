@@ -41,7 +41,7 @@ class TkApp:
         self.output_dir = None
 
         self.root = Tk()
-        self.root.title("SinoPath_1.3.2")
+        self.root.title("SinoPath_1.3.3")
         # self.root.geometry("720x480")
 
         # 置中
@@ -57,8 +57,8 @@ class TkApp:
 
         self.xml_label = Label(self.root, text=self.xml_path)
         self.xml_label.config(font=("Courier", 8))
-        self.xml_label['text'] = "D:/逃生路徑/_LG05/gbXML/LG05_20230207_163209.xml"
-        self.xml_path = "D:/逃生路徑/_LG05/gbXML/LG05_20230207_163209.xml"
+        # self.xml_label['text'] = "D:/逃生路徑/_LG05/gbXML/LG05_20230207_163209.xml"
+        # self.xml_path = "D:/逃生路徑/_LG05/gbXML/LG05_20230207_163209.xml"
         # self.xml_label['text'] = "D:/逃生路徑/_LG10/gbXML/LG10_Extended_gbXML_20211102.xml"
         # self.xml_path = "D:/逃生路徑/_LG10/gbXML/LG10_Extended_gbXML_20211102.xml"
         # self.xml_label['text'] = "D:/逃生路徑/_G22/gbXML/G22_Extended_gbXML_20220524.xml"
@@ -101,8 +101,8 @@ class TkApp:
         output_cache_label = Label(self.root, text=self.output_cache_dir)
         # output_cache_label = Label(self.root, text=self.input_cache_dir) # <-- 台大原本這樣寫
         output_cache_label.config(font=("Courier", 8))
-        output_cache_label['text'] = "D:/逃生路徑/_LG05/Output cache"
-        self.output_cache_dir = "D:/逃生路徑/_LG05/Output cache"
+        # output_cache_label['text'] = "D:/逃生路徑/_LG05/Output cache"
+        # self.output_cache_dir = "D:/逃生路徑/_LG05/Output cache"
         # output_cache_label['text'] = "D:/逃生路徑/_LG10/Output cache"
         # self.output_cache_dir = "D:/逃生路徑/_LG10/Output cache"
         # output_cache_label['text'] = "D:/逃生路徑/_G22/Output cache"
@@ -124,8 +124,8 @@ class TkApp:
 
         output_label = Label(self.root, text=self.output_dir)
         output_label.config(font=("Courier", 8))
-        output_label['text'] = "D:/逃生路徑/_LG05/Output directory"
-        self.output_dir = "D:/逃生路徑/_LG05/Output directory"
+        # output_label['text'] = "D:/逃生路徑/_LG05/Output directory"
+        # self.output_dir = "D:/逃生路徑/_LG05/Output directory"
         # output_label['text'] = "D:/逃生路徑/_LG10/Output directory"
         # self.output_dir = "D:/逃生路徑/_LG10/Output directory"
         # output_label['text'] = "D:/逃生路徑/_G22/Output directory"
@@ -474,9 +474,9 @@ class TkApp:
 
             failed_endpoints = self.building.plot_sol(
                 "2",
-                start_point.strip('\n'),
+                start_point.strip(),
                 # "",
-                instance_str
+                instance_str.strip()
             )
             if len(failed_endpoints):
                 messagebox.showwarning(

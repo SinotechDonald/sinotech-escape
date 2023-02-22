@@ -1147,45 +1147,82 @@ class Building:
 
         logging.info("正在輸出最險峻路徑表格")
         
-        cols = []
-        counts = len(pathInfo) * 2 - 1
-        count = 0
-        i = 0
-        while count < counts:
-            if (count % 2) == 1:
-                cols.append(pathInfo[i-1][0] + ' to ' + pathInfo[i][0])
-                count+=1
-            else:
-                cols.append(pathInfo[i][0])
-                i+=1
-                count+=1
-        cols.append("合計")
-        sol_table = pd.DataFrame(columns = cols)
+        # # 橫式
+        # cols = []
+        # counts = len(pathInfo) * 2 - 1
+        # count = 0
+        # i = 0
+        # while count < counts:
+        #     if (count % 2) == 1:
+        #         cols.append(pathInfo[i-1][0] + ' to ' + pathInfo[i][0])
+        #         count+=1
+        #     else:
+        #         cols.append(pathInfo[i][0])
+        #         i+=1
+        #         count+=1
+        # cols.append("合計")
+        # sol_table = pd.DataFrame(columns = cols)
         
+        # try:
+        #     new_row = dict()
+        #     count = 0
+        #     i = 0
+        #     total = 0
+        #     for col in cols:
+        #         if col == "合計":
+        #             new_row["合計"] = total
+        #         elif (count % 2) == 1:
+        #             # 如果底層有逃生路徑才加上垂直高度距離
+        #             if pathInfo[i-1][1][1] > 0:
+        #                 new_row[col] = pathInfo[i][1][0] - pathInfo[i-1][1][0]
+        #                 total+=pathInfo[i][1][0] - pathInfo[i-1][1][0]
+        #             else:
+        #                 new_row[col] = 0
+        #             count+=1
+        #         else:
+        #             new_row[col] = pathInfo[i][1][1]
+        #             total+=pathInfo[i][1][1]
+        #             i+=1
+        #             count+=1
+
+        #     sol_table = sol_table.append(new_row, ignore_index=True)
+                    
+        # except:
+        #     error = 'error'
+
+        # 直式
+        sol_table = pd.DataFrame(columns=["樓層", "距離"])
+        rows = len(pathInfo) * 2 - 1
+        row = 0
+        i = 0
+        total = 0
         try:
             new_row = dict()
-            count = 0
-            i = 0
-            total = 0
-            for col in cols:
-                if col == "合計":
-                    new_row["合計"] = total
-                elif (count % 2) == 1:
+            while row < rows:
+                if (row % 2) == 1:
                     # 如果底層有逃生路徑才加上垂直高度距離
                     if pathInfo[i-1][1][1] > 0:
-                        new_row[col] = pathInfo[i][1][0] - pathInfo[i-1][1][0]
+                        new_row["樓層"] = pathInfo[i-1][0] + '高度'
+                        new_row["距離"] = pathInfo[i][1][0] - pathInfo[i-1][1][0]
+                        sol_table = sol_table.append(new_row, ignore_index=True)
                         total+=pathInfo[i][1][0] - pathInfo[i-1][1][0]
                     else:
-                        new_row[col] = 0
-                    count+=1
+                        new_row["樓層"] = pathInfo[i-1][0] + '高度'
+                        new_row["距離"] = 0
+                        sol_table = sol_table.append(new_row, ignore_index=True)
+                    row+=1
                 else:
-                    new_row[col] = pathInfo[i][1][1]
+                    new_row["樓層"] = pathInfo[i][0]
+                    new_row["距離"] = pathInfo[i][1][1]
+                    sol_table = sol_table.append(new_row, ignore_index=True)
                     total+=pathInfo[i][1][1]
                     i+=1
-                    count+=1
+                    row+=1
 
+            new_row["樓層"] = "合計"
+            new_row["距離"] = total
             sol_table = sol_table.append(new_row, ignore_index=True)
-                    
+
         except:
             error = 'error'
 
