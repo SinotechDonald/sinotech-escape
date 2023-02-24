@@ -1129,7 +1129,7 @@ class Building:
         pathInfo = dict()
         for axe in axes:
             pathInfo[axe.floor_name] = (axe.elevation, axe.path_length)
-        pathInfo = sorted(pathInfo.items(), key=lambda x:x[0], reverse=True)
+        pathInfo = sorted(pathInfo.items(), key=lambda x:x[1][0], reverse=False)
         self.export_graph_path(plots_dir, instance_str, end_point_id, pathInfo) # 匯出逃生路徑資訊
 
     def export_graph_path(self, plots_dir, instance_str, end_point_id, pathInfo):
